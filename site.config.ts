@@ -1,12 +1,12 @@
 import type { SiteConfig } from '~/cfg-schema';
 
 const config: SiteConfig = {
-  siteUrl: 'https://whitespace-blog-template.netlify.app',
+  siteUrl: 'https://chinmxyblog.vercel.app/',
   title: 'chinmay\'s blog',
   titleTemplate: '%s',
   description: 'My personal blog about software development, AI, and other topics.',
   favicon: '/favicon.svg',
-  ogImage: '/og.avif',
+  ogImage: '/image.png',
   // analytics: {
   //   provider: 'umami',
   //   websiteId: 'your-umami-website-id',
