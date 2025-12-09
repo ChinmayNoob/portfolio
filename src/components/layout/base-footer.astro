@@ -1,0 +1,17 @@
+---
+import { cfg } from '~/cfg';
+---
+
+<footer
+  transition:persist
+  class="text-text-2 tablet:flex-row tablet:items-center flex flex-col gap-1 text-sm"
+>
+  <div>
+    <span>©</span>
+    <a class="link text-text-1" href="/" target="_blank">{cfg.bio.name}</a>
+    <span>, Build with Astro</span>
+  </div>
+  <nav class="tablet:ml-auto flex gap-2" aria-label="More on this site">
+    <a class="link" href="/rss.xml" target="_blank">RSS</a>
+  </nav>
+</footer>

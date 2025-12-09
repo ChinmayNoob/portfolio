@@ -1,0 +1,67 @@
+---
+import '@shikijs/twoslash/style-rich.css';
+import '~/styles/mdx.css';
+
+import type { CollectionEntry } from 'astro:content';
+import { cfg } from '~/cfg';
+import BaseLayout from '~/components/layout/base-layout.astro';
+import MediumZoomScript from '~/components/script/medium-zoom-script.astro';
+import TwoslashFloatingScript from '~/components/script/twoslash-floating-script.astro';
+import CopyCodeScript from '~/components/script/copy-code-script.astro';
+import PostImage from '~/components/layout/post-image.astro';
+import { getTableOfContents } from '~/lib/mdx/toc';
+import BaseLeftAside from '~/components/layout/base-left-aside.astro';
+import BaseBio from '~/components/layout/base-bio.astro';
+import PostToc from '~/components/layout/post-toc.astro';
+import PostHeader from '~/components/layout/post-header.astro';
+import PostRelated from '~/components/layout/post-related.astro';
+import PostTags from '~/components/layout/post-tags.astro';
+import PostShare from '~/components/layout/post-share.astro';
+import PostNav from '~/components/layout/post-nav.astro';
+
+type Props = {
+  post: CollectionEntry<'posts'>;
+  prevPost?: CollectionEntry<'posts'>;
+  nextPost?: CollectionEntry<'posts'>;
+  relatedPosts: CollectionEntry<'posts'>[];
+};
+
+const { post, relatedPosts, prevPost, nextPost } = Astro.props;
+const tags = post.data.tags ?? [];
+const toc = getTableOfContents(post.body);
+
+const { Content, remarkPluginFrontmatter } = await post.render();
+---
+
+<BaseLayout
+  seo={{
+    title: post.data.title,
+    description: post.data.description,
+  }}
+>
+  <PostHeader
+    class="mb-10"
+    title={post.data.title}
+    date={post.data.date}
+    readingTime={remarkPluginFrontmatter.minutesRead}
+  />
+  <article class="mdx">
+    <Content components={{ img: PostImage }} />
+    <hr />
+  </article>
+  <div class="flex flex-col">
+    <PostShare {post} class="mb-14" />
+    <BaseBio class="mt-5 mb-10" />
+    <PostTags {tags} class="mb-10" />
+    <PostRelated {relatedPosts} />
+    <PostNav prevPost={prevPost} nextPost={nextPost} class="my-10" />
+  </div>
+  {/* asides */}
+  <BaseLeftAside>
+    <PostToc {toc} />
+  </BaseLeftAside>
+  {/* scripts */}
+  <MediumZoomScript />
+  <TwoslashFloatingScript />
+  <CopyCodeScript />
+</BaseLayout>

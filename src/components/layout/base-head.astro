@@ -1,0 +1,70 @@
+---
+import { cfg } from '~/cfg';
+import type { SEO } from '~/lib/types';
+import ThemeHeadScript from '~/components/script/theme-head-script.astro';
+import BaseFont from '~/components/layout/base-font.astro';
+import AnalyticsScript from '~/components/script/analytics-script.astro';
+
+export type Props = {
+  seo?: SEO;
+};
+
+const { seo = {} } = Astro.props;
+
+const title =
+  seo.title && cfg.titleTemplate
+    ? cfg.titleTemplate.replace('%s', seo.title)
+    : cfg.title;
+const description = seo.description ?? cfg.description;
+
+const ogImage = seo.ogImage ?? cfg.ogImage;
+const ogImageURL = ogImage?.startsWith('/')
+  ? new URL(ogImage, Astro.url).toString()
+  : ogImage;
+
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+---
+
+{/* Global Metadata */}
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<link rel="icon" href={cfg.favicon} />
+<meta name="generator" content={Astro.generator} />
+
+{/* Canonical URL */}
+<link rel="canonical" href={canonicalURL} />
+
+{/* Primary Meta Tags */}
+<title>{title}</title>
+<meta name="title" content={title} />
+<meta name="description" content={description} />
+
+{/* Open Graph */}
+<meta property="og:type" content="website" />
+<meta property="og:url" content={Astro.url} />
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:image" content={ogImageURL} />
+
+{/* Twitter */}
+<meta property="twitter:card" content="summary_large_image" />
+<meta property="twitter:url" content={Astro.url} />
+<meta property="twitter:title" content={title} />
+<meta property="twitter:description" content={description} />
+<meta property="twitter:image" content={ogImageURL} />
+
+{/* Sitemap */}
+<link rel="sitemap" href="/sitemap-index.xml" />
+<link
+  rel="alternate"
+  type="application/rss+xml"
+  title={cfg.title}
+  href="/rss.xml"
+/>
+
+{/* Font */}
+<BaseFont />
+
+{/* Script */}
+<ThemeHeadScript />
+<AnalyticsScript />
