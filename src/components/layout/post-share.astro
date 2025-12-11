@@ -19,13 +19,6 @@ const { post, class: className } = Astro.props;
 const socials = [
   {
     type: 'link',
-    Icon: BlueskyIcon,
-    url: `https://bsky.app/intent/compose?text=${encodeURIComponent(
-      `${post.data.title} by @todo\n\n ${Astro.url}`,
-    )}`,
-  },
-  {
-    type: 'link',
     Icon: XformerlyTwitterIcon,
     url: `https://twitter.com/intent/tweet/?text=${encodeURIComponent(
       `${post.data.title} by @todo\n\n ${Astro.url}`,
@@ -37,11 +30,6 @@ const socials = [
     url: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(
       `${Astro.url}`,
     )}&title=${encodeURIComponent(`${post.data.title}`)}`,
-  },
-  {
-    type: 'link',
-    Icon: RedditIcon,
-    url: `https://reddit.com/submit/?url=${encodeURIComponent(`${Astro.url}`)}`,
   },
   {
     type: 'CopyLink',
