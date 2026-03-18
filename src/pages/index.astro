@@ -1,16 +1,54 @@
 ---
 import { cfg } from '~/cfg';
-import BaseLayout from '~/components/layout/base-layout.astro';
 import BaseBio from '~/components/layout/base-bio.astro';
-import { getPostsCollection, getTags } from '~/lib/mdx/post';
-import PostList from '~/components/post-list';
+import BaseLayout from '~/components/layout/base-layout.astro';
+import { ArrowRightUpIcon } from '~/components/ui/icons';
 
-const posts = await getPostsCollection();
-const tags = getTags(posts);
+const skills = ['Typescript','Golang','React','Gen-AI','PostgreSQL'];
 ---
 
 <BaseLayout>
-  <h1 class="font-display text-5xl font-bold">{cfg.title}</h1>
-  <BaseBio class="my-14" />
-  <PostList client:load posts={posts} tags={tags} />
+  <article class="prose-index">
+    <h1 class="font-display text-5xl font-bold">{cfg.title}</h1>
+    <section class="flow mt-10" style="--flow-space: 1.25em">
+      <p class="font-editorial text-3xl leading-tight">
+        I'm a backend focused full stack developer. I spend my days building
+        systems you don't see, interfaces you remember when it's needed, and
+        figuring out how to make ideas work better on the web.
+      </p>
+
+      <div class="pt-6">
+        <BaseBio>
+          <span slot="name">looking for backend and full stack roles</span>
+          <span slot="description">{skills.join(' • ')}</span>
+        </BaseBio>
+      </div>
+
+      <h3 class="font-editorial text-2xl">More</h3>
+      <nav class="flex flex-col gap-2">
+        <a
+          href="https://fern-ui.vercel.app/"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="link flex items-center gap-3"
+        >
+          <span class="flex-shrink-0">
+            <ArrowRightUpIcon style={{ width: 20, height: 20 }} />
+          </span>
+          <span>Visit Fern UI</span>
+        </a>
+        <a
+          href="https://cal.com/chinmaynoob"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="link flex items-center gap-3"
+        >
+          <span class="flex-shrink-0">
+            <ArrowRightUpIcon style={{ width: 20, height: 20 }} />
+          </span>
+          <span>Schedule a Call with Me</span>
+        </a>
+      </nav>
+    </section>
+  </article>
 </BaseLayout>

@@ -1,16 +1,140 @@
 ---
-import { cfg } from '~/cfg';
+const siteLinks = [
+  { href: '/now', label: 'Now' },
+  { href: '/list-100', label: 'List 100' },
+  { href: '/bookshelf', label: 'Bookshelf' },
+  { href: '/webrings', label: 'Webrings' },
+  { href: '/colophon', label: 'Colophon' },
+];
+
+const socialLinks = [
+  { href: 'mailto:chinmaypvt04@gmail.com', label: 'Mail' },
+  { href: 'https://x.com/Chinmay0408', label: 'X (Twitter)' },
+  { href: 'https://github.com/chinmaynoob', label: 'GitHub' },
+  { href: 'https://www.linkedin.com/in/chinmay-sawant0408/', label: 'LinkedIn' },
+];
 ---
 
-<footer
-  transition:persist
-  class="text-text-2 tablet:flex-row tablet:items-center flex flex-col gap-1 text-sm"
->
-  <div>
-    <span>©</span>
-    <a class="link text-text-1" href="/" target="_blank">{cfg.bio.name}</a>
+<footer transition:persist>
+  <div class="content">
+    <div class="links">
+      {siteLinks.map(({ href, label }) => (
+        <a href={href}>{label}</a>
+      ))}
+    </div>
+    <div class="links">
+      {socialLinks.map(({ href, label }) => (
+        <a href={href} target="_blank" rel="me noopener noreferrer">{label}</a>
+      ))}
+      <a href="/rss.xml" target="_blank" rel="noopener noreferrer">RSS</a>
+    </div>
+    <div class="banner">
+      <span class="emoji">🌱</span>
+      <a href="https://www.who.int/health-topics/mental-health" target="_blank" rel="noopener noreferrer">
+        Take Care of Your Mind
+      </a>
+    </div>
+    <div class="branding">
+      <span class="name">Chinmay Sawant</span>
+    </div>
   </div>
-  <nav class="tablet:ml-auto flex gap-2" aria-label="More on this site">
-    <a class="link" href="/rss.xml" target="_blank">RSS</a>
-  </nav>
 </footer>
+
+<style>
+  footer {
+    margin-top: var(--spacing-page-y);
+    padding: var(--spacing-page-y) var(--spacing-page-x);
+    width: 100%;
+    border-top: 1px solid var(--c-border);
+  }
+
+  .content {
+    max-width: var(--spacing-page-w);
+    margin: 0 auto;
+    display: grid;
+    grid-template: "links1 links2 branding" 1fr "banner banner branding" auto / 0.5fr 0.5fr 2fr;
+    gap: 1rem 2rem;
+  }
+
+  @media (max-width: 700px) {
+    .content {
+      grid-template: "branding branding" "links1 links2" "banner banner" / 1fr 1fr;
+      gap: 1.5rem;
+    }
+  }
+
+  .links {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  .links:first-child {
+    grid-area: links1;
+  }
+
+  .links:nth-child(2) {
+    grid-area: links2;
+  }
+
+  .links a {
+    font-family: var(--font-editorial);
+    font-size: 1.125rem;
+    line-height: 1.4;
+    color: var(--c-text-1);
+    text-decoration: underline;
+    text-decoration-color: transparent;
+    text-underline-offset: 4px;
+    transition: text-decoration-color 200ms ease;
+  }
+
+  .links a:hover {
+    text-decoration-color: currentColor;
+  }
+
+  .banner {
+    grid-area: banner;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--c-text-2);
+  }
+
+  .banner .emoji {
+    line-height: 1;
+  }
+
+  .banner a {
+    text-decoration: none;
+    color: inherit;
+    transition: color 200ms ease;
+  }
+
+  .banner a:hover {
+    color: var(--c-text-1);
+  }
+
+  .branding {
+    grid-area: branding;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+  }
+
+  .name {
+    font-family: var(--font-editorial);
+    font-size: 1.5rem;
+    font-weight: 500;
+    color: var(--c-text-1);
+  }
+
+  @media (max-width: 700px) {
+    .branding {
+      justify-content: flex-start;
+    }
+
+    .name {
+      font-size: 1.25rem;
+    }
+  }
+</style>

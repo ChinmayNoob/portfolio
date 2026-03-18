@@ -1,0 +1,12 @@
+---
+import BaseLayout from '~/components/layout/base-layout.astro';
+import { getPostsCollection, getTags } from '~/lib/mdx/post';
+import PostList from '~/components/post-list';
+
+const posts = await getPostsCollection();
+const tags = getTags(posts);
+---
+
+<BaseLayout>
+  <PostList client:load posts={posts} tags={tags} />
+</BaseLayout>

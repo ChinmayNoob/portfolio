@@ -51,7 +51,9 @@ const { Content, remarkPluginFrontmatter } = await post.render();
   </article>
   <div class="flex flex-col">
     <PostShare {post} class="mb-14" />
-    <BaseBio class="mt-5 mb-10" />
+    <div class="mt-5 mb-10">
+      <BaseBio />
+    </div>
     <PostTags {tags} class="mb-10" />
     <PostRelated {relatedPosts} />
     <PostNav prevPost={prevPost} nextPost={nextPost} class="my-10" />

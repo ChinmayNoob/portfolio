@@ -1,7 +1,38 @@
 @import 'tailwindcss';
+@import './fonts.css';
+@import './variable.css';
+@import './underline.css';
+@import './utilities/flow.css';
+@import './links.css';
 @import './theme.css';
 
 @custom-variant dark (&:is(.dark *));
+
+/* ================================================== */
+/* index / home */
+/* ================================================== */
+
+.prose-index .link.flex {
+  display: flex;
+}
+
+/* ================================================== */
+/* nav */
+/* ================================================== */
+
+.base-nav nav a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: transparent;
+  transition: text-decoration-color 200ms ease;
+}
+.base-nav nav a:hover {
+  text-decoration-color: white;
+}
+.base-nav .base-nav-link-active {
+  color: var(--tomato-9);
+  text-decoration-color: var(--tomato-9);
+}
 
 /* ================================================== */
 /* common */
@@ -47,6 +78,92 @@ footer {
   max-width: var(--spacing-page-w);
   width: 100%;
   margin: 0 auto;
+}
+
+.base-footer {
+  margin-top: var(--spacing-page-y);
+  width: 100%;
+  max-width: none;
+  margin-left: 0;
+  margin-right: 0;
+  padding: 2rem var(--spacing-page-x) var(--spacing-page-y);
+  border-top: 1px solid var(--c-border);
+}
+
+.base-footer-content {
+  max-width: var(--spacing-page-w);
+  margin: 0 auto;
+  display: grid;
+  grid-template:
+    'links1 links2 form' 1fr
+    'banner banner form' auto / 0.5fr 0.5fr 2fr;
+  gap: 1rem 2rem;
+}
+
+.base-footer-links {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.base-footer-links-primary {
+  grid-area: links1;
+}
+
+.base-footer-links-secondary {
+  grid-area: links2;
+}
+
+.base-footer-links a,
+.base-footer-banner a {
+  color: var(--c-text-1);
+}
+
+.base-footer-links a {
+  font-family: var(--font-editorial);
+  font-size: 1.125rem;
+  line-height: 1.4;
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-underline-offset: 4px;
+  transition: text-decoration-color 200ms ease;
+}
+
+.base-footer-links a:hover,
+.base-footer-banner a:hover {
+  text-decoration-color: currentColor;
+}
+
+.base-footer-banner {
+  grid-area: banner;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--c-text-2);
+}
+
+.base-footer-banner-emoji {
+  line-height: 1;
+}
+
+.base-footer-banner a {
+  text-decoration: none;
+  color: inherit;
+}
+
+.base-footer-subscribe {
+  grid-area: form;
+}
+
+@media (max-width: 700px) {
+  .base-footer-content {
+    grid-template:
+      'form form'
+      'links1 links2'
+      'banner banner' / 1fr 1fr;
+    gap: 1.5rem;
+  }
 }
 
 ::selection {

@@ -1,20 +1,50 @@
 ---
 import { BackIcon } from '~/components/ui/icons';
 import ThemeToggle from '~/components/ui/theme-toggle.astro';
+import { cn } from '~/lib/utils';
 
-const isRoot = Astro.url.pathname === '/';
+export type Props = {
+  currentPath?: string;
+};
+
+const { currentPath = '/' } = Astro.props;
+
+const navItems = [
+  { href: '/', label: 'Home' },
+  { href: '/about', label: 'About' },
+  { href: '/posts', label: 'Posts' },
+  { href: '/projects', label: 'Projects' },
+  { href: '/guestbook', label: 'Guestbook' },
+];
+
+const isRoot = currentPath === '/';
 ---
 
-<div class="mb-10 flex items-center gap-2 font-serif font-semibold">
-  {
-    !isRoot && (
-      <a
-        class="hover:bg-gray-soft inline-block rounded-md p-1 text-2xl transition active:scale-95"
-        href="/"
-      >
-        <BackIcon />
-      </a>
-    )
-  }
-  <ThemeToggle class="ml-auto" />
-</div>
+<header class="base-nav mb-10 flex flex-wrap items-center gap-2 font-editorial text-lg font-semibold">
+  {!isRoot && (
+    <a
+      class="inline-block rounded-md p-1 text-2xl transition active:scale-95"
+      href="/"
+      aria-label="Back to home"
+    >
+      <BackIcon />
+    </a>
+  )}
+  <nav class="flex flex-1 items-center gap-1" aria-label="Main navigation">
+    {navItems.map(({ href, label }) => {
+      const isActive = currentPath === href || (href !== '/' && currentPath.startsWith(href + '/'));
+      return (
+        <a
+          href={href}
+          class={cn(
+            'rounded-md px-3 py-1.5 transition active:scale-95',
+            isActive && 'base-nav-link-active',
+          )}
+        >
+          {label}
+        </a>
+      );
+    })}
+  </nav>
+  <ThemeToggle />
+</header>

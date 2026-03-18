@@ -2,7 +2,7 @@ import type { SiteConfig } from '~/cfg-schema';
 
 const config: SiteConfig = {
   siteUrl: 'https://chinmxyblog.vercel.app/',
-  title: 'chinmay\'s blog',
+  title: 'Chinmay Sawant',
   titleTemplate: '%s',
   description: 'My personal blog about software development, AI, and other topics.',
   favicon: '/favicon.svg',

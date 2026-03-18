@@ -1,0 +1,77 @@
+/* Light mode colors */
+@import "@radix-ui/colors/gray.css";
+@import "@radix-ui/colors/blue.css";
+@import "@radix-ui/colors/green.css";
+@import "@radix-ui/colors/red.css";
+@import "@radix-ui/colors/purple.css";
+@import "@radix-ui/colors/orange.css";
+@import "@radix-ui/colors/indigo.css";
+@import "@radix-ui/colors/violet.css";
+@import "@radix-ui/colors/pink.css";
+@import "@radix-ui/colors/teal.css";
+@import "@radix-ui/colors/cyan.css";
+@import "@radix-ui/colors/lime.css";
+@import "@radix-ui/colors/yellow.css";
+@import "@radix-ui/colors/amber.css";
+@import "@radix-ui/colors/tomato.css";
+
+/* Dark mode colors */
+@import "@radix-ui/colors/gray-dark.css";
+@import "@radix-ui/colors/blue-dark.css";
+@import "@radix-ui/colors/green-dark.css";
+@import "@radix-ui/colors/red-dark.css";
+@import "@radix-ui/colors/purple-dark.css";
+@import "@radix-ui/colors/orange-dark.css";
+@import "@radix-ui/colors/indigo-dark.css";
+@import "@radix-ui/colors/violet-dark.css";
+@import "@radix-ui/colors/pink-dark.css";
+@import "@radix-ui/colors/teal-dark.css";
+@import "@radix-ui/colors/cyan-dark.css";
+@import "@radix-ui/colors/lime-dark.css";
+@import "@radix-ui/colors/yellow-dark.css";
+@import "@radix-ui/colors/amber-dark.css";
+@import "@radix-ui/colors/tomato-dark.css";
+
+:root {
+  /* Font sizes */
+  --fs--2: 0.75rem;
+  --fs--1: 0.875rem;
+  --fs-0: 1rem;
+  --fs-1: 1.125rem;
+  --fs-2: 1.25rem;
+  --fs-3: 1.5rem;
+  --fs-4: 1.875rem;
+  --fs-5: 2.25rem;
+
+  /* Spacing */
+  --space-3xs: 0.25rem;
+  --space-2xs: 0.5rem;
+  --space-xs: 0.75rem;
+  --space-s: 1rem;
+  --space-m: 1.5rem;
+  --space-l: 2rem;
+  --space-xl: 3rem;
+  --space-2xl: 4rem;
+  --space-3xl: 6rem;
+
+  /* Line heights */
+  --lh--2: 1rem;
+  --lh--1: 1.25rem;
+  --lh-0: 1.5rem;
+  --lh-1: 1.625rem;
+  --lh-2: 1.75rem;
+  --lh-3: 1.875rem;
+  --lh-4: 2.25rem;
+  --lh-5: 2.5rem;
+  --lh-6: 3.75rem;
+
+  /* Durations */
+  --duration-fast: 150ms;
+  --duration-normal: 200ms;
+  --duration-slow: 250ms;
+
+  /* Easing functions */
+  --ease-out: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --ease-out-quart: cubic-bezier(0.165, 0.84, 0.44, 1);
+  --ease-in-out: cubic-bezier(0.455, 0.03, 0.515, 0.955);
+}
