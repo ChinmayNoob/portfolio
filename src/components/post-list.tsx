@@ -48,8 +48,8 @@ function TagFilter({
   }
 
   return (
-    <div className="relative my-14 border-l pl-5 md:pl-6">
-      <div className="absolute top-0 -left-16 select-none md:-left-20">
+    <div className="relative my-14 border-l pl-6 md:pl-8">
+      <div className="absolute top-0 right-full mr-4 select-none">
         <span className="font-editorial text-text-2 -mx-1 inline-block rounded-md px-1 text-[1.05rem] leading-none tracking-[-0.01em]">
           Tags
         </span>
@@ -93,11 +93,11 @@ function PostYearList({ posts }: { posts: PostData[] }) {
   ).sort(([yearA], [yearB]) => +yearB - +yearA);
 
   return (
-    <div className="group my-14 space-y-10 border-l pl-5 md:pl-6">
+    <div className="group my-14 space-y-10 pl-6 md:pl-8">
       {yearList.map(([year, postList]) => {
         return (
           <div key={year} className="group/year relative">
-            <div className="absolute top-0 -left-16 select-none md:-left-20">
+            <div className="absolute top-0 right-full mr-4 translate-y-[2px] select-none">
               <h2 className="font-editorial text-text-2 group-hover/year:bg-gray-soft -mx-1 rounded-md px-1 text-[1.35rem] leading-none tracking-[-0.01em] transition group-hover:opacity-40 group-hover/year:opacity-100!">
                 {year}
               </h2>
