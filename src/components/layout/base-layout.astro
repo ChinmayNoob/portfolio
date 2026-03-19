@@ -25,10 +25,14 @@ const currentPath = new URL(Astro.request.url).pathname;
   </head>
   <body>
     <div class="blur-layer" aria-hidden="true"></div>
-    <main {...props}>
-      <BaseNav currentPath={currentPath} />
-      <slot />
-    </main>
+    <div class="page-shell">
+      <aside class="page-nav-rail">
+        <BaseNav currentPath={currentPath} />
+      </aside>
+      <main class="page-main" {...props}>
+        <slot />
+      </main>
+    </div>
     <BaseFooter />
   </body>
 </html>

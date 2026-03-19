@@ -8,5 +8,13 @@ const tags = getTags(posts);
 ---
 
 <BaseLayout>
-  <PostList client:load posts={posts} tags={tags} />
+  <article class="prose-index">
+    <section class="flow mt-10" style="--flow-space: 1.25em">
+      <div class="flex flex-col gap-2">
+        <h1 class="font-editorial text-5xl">Posts</h1>
+        <p class="text-3xl ">Essays, thoughts, and technical writing on development, design, and personal reflection.</p>
+      </div>
+      <PostList client:load posts={posts} tags={tags} />
+    </section>
+  </article>
 </BaseLayout>

@@ -20,17 +20,12 @@ const navItems = [
 const isRoot = currentPath === '/';
 ---
 
-<header class="base-nav mb-10 flex flex-wrap items-center gap-2 font-editorial text-lg font-semibold">
-  {!isRoot && (
-    <a
-      class="inline-block rounded-md p-1 text-2xl transition active:scale-95"
-      href="/"
-      aria-label="Back to home"
-    >
-      <BackIcon />
-    </a>
-  )}
-  <nav class="flex flex-1 items-center gap-1" aria-label="Main navigation">
+<header class="base-nav font-editorial text-lg font-semibold">
+  <div class="base-nav-toggle">
+    <ThemeToggle />
+  </div>
+
+  <nav class="base-nav-links" aria-label="Main navigation">
     {navItems.map(({ href, label }) => {
       const isActive = currentPath === href || (href !== '/' && currentPath.startsWith(href + '/'));
       return (
@@ -46,5 +41,4 @@ const isRoot = currentPath === '/';
       );
     })}
   </nav>
-  <ThemeToggle />
 </header>

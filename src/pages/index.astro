@@ -9,7 +9,6 @@ const skills = ['Typescript','Golang','React','Gen-AI','PostgreSQL'];
 
 <BaseLayout>
   <article class="prose-index">
-    <h1 class="font-display text-5xl font-bold">{cfg.title}</h1>
     <section class="flow mt-10" style="--flow-space: 1.25em">
       <p class="font-editorial text-3xl leading-tight">
         I'm a backend focused full stack developer. I spend my days building
@@ -19,36 +18,55 @@ const skills = ['Typescript','Golang','React','Gen-AI','PostgreSQL'];
 
       <div class="pt-6">
         <BaseBio>
-          <span slot="name">looking for backend and full stack roles</span>
-          <span slot="description">{skills.join(' • ')}</span>
-        </BaseBio>
       </div>
 
-      <h3 class="font-editorial text-2xl">More</h3>
-      <nav class="flex flex-col gap-2">
-        <a
+      <div>
+        <h3 class="font-editorial text-2xl">Now</h3>
+        <p class="text-text-2 text-lg ">
+          I'm looking for internships and full time roles. Previously, I
+          held various roles at <a
+            href="https://www.linkedin.com/in/chinmay-sawant0408/"
+            target="_blank"
+          >
+            startups</a
+          >. These days, my focus is on refining the fundamentals of my
+          craft, and figuring how to balance all the aspects of my life
+          without neglecting any of them.
+        </p>
+        <p class="text-text-2 text-lg ">
+          Sometimes I <a href="/posts" target="_self">write</a> about what I'm
+          learning; other times, I just write.
+        </p>
+      </div>
+
+
+      <div>
+        <h3 class="font-editorial text-2xl">More</h3>
+        <nav class="flex flex-col gap-2">
+          <a
           href="https://fern-ui.vercel.app/"
           target="_blank"
           rel="noopener noreferrer"
           class="link flex items-center gap-3"
-        >
+          >
           <span class="flex-shrink-0">
             <ArrowRightUpIcon style={{ width: 20, height: 20 }} />
           </span>
           <span>Visit Fern UI</span>
         </a>
         <a
-          href="https://cal.com/chinmaynoob"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="link flex items-center gap-3"
+        href="https://cal.com/chinmaynoob"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="link flex items-center gap-3"
         >
-          <span class="flex-shrink-0">
-            <ArrowRightUpIcon style={{ width: 20, height: 20 }} />
-          </span>
-          <span>Schedule a Call with Me</span>
-        </a>
-      </nav>
+        <span class="flex-shrink-0">
+          <ArrowRightUpIcon style={{ width: 20, height: 20 }} />
+        </span>
+        <span>Schedule a Call with Me</span>
+      </a>
+    </nav>
+  </div>
     </section>
   </article>
 </BaseLayout>
