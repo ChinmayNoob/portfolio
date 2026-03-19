@@ -8,36 +8,68 @@ interface Props {
 const { toc } = Astro.props;
 ---
 
-<ul data-toc-container class="space-y-2 font-sans text-sm">
-  {
-    toc.map((section) => (
-      <li class="flex">
-        <a class="link" href={`#${section.slug}`} data-depth={section.depth}>
-          {section.value}
-        </a>
-      </li>
-    ))
-  }
-</ul>
+{
+  toc.length > 0 && (
+    <div class="post-toc-shell">
+      <p class="post-toc-label">On this page</p>
+      <ul data-toc-container class="post-toc-list">
+        {toc.map((section) => (
+          <li class="flex">
+            <a
+              class="link post-toc-link"
+              href={`#${section.slug}`}
+              data-depth={section.depth}
+            >
+              {section.value}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
 
 <style>
-  [data-depth='1'] {
-    margin-left: 10px;
-  }
-  [data-depth='2'] {
-    margin-left: 20px;
-  }
-  [data-depth='3'] {
-    margin-left: 30px;
+  .post-toc-shell {
+    width: 100%;
+    padding-right: 0.25rem;
   }
 
-  .link {
-    color: var(--c-text-3);
-  }
-  .dark .link {
+  .post-toc-label {
+    margin-bottom: 1rem;
+    font-family: var(--font-editorial);
+    font-size: 1.1rem;
+    line-height: 1;
+    letter-spacing: -0.01em;
     color: var(--c-text-2);
   }
-  .link.active {
+
+  .post-toc-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    font-size: 0.95rem;
+    line-height: 1.45;
+  }
+
+  [data-depth='1'] {
+    margin-left: 12px;
+  }
+  [data-depth='2'] {
+    margin-left: 24px;
+  }
+  [data-depth='3'] {
+    margin-left: 36px;
+  }
+
+  .post-toc-link {
+    color: var(--c-text-3);
+    text-wrap: pretty;
+  }
+  .dark .post-toc-link {
+    color: var(--c-text-2);
+  }
+  .post-toc-link.active {
     color: var(--c-text-1);
   }
 </style>

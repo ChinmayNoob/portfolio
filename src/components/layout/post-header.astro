@@ -12,9 +12,25 @@ const { class: className, title, date, readingTime } = Astro.props;
 ---
 
 <div class={className}>
-  <h1 class="font-display text-5xl font-bold">{title}</h1>
-  <div class="text-text-2">
+  <h1
+    class="post-title font-editorial text-[clamp(2rem,5vw,3.1rem)] leading-[1.05] tracking-[-0.02em]"
+  >
+    {title}
+  </h1>
+  <div class="post-meta text-text-2">
     <span>{format(date, 'MMM dd, yyyy')}</span>
     {readingTime && <span>· {readingTime}</span>}
   </div>
 </div>
+
+<style>
+  .post-title {
+    text-wrap: balance;
+  }
+
+  .post-meta {
+    margin-top: 0.75rem;
+    font-size: 1.0625rem;
+    line-height: 1.8;
+  }
+</style>

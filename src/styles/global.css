@@ -257,7 +257,9 @@ footer {
   text-decoration-color: var(--c-gray-1);
   text-decoration-thickness: 1px;
   text-underline-offset: 4px;
-  transition: all 200ms ease-in-out;
+  transition:
+    color 200ms ease,
+    text-decoration-color 200ms ease;
 }
 .link::before,
 .mdx a:not(.anchor)::before {

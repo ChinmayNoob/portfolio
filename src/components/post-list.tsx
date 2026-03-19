@@ -48,16 +48,18 @@ function TagFilter({
   }
 
   return (
-    <div className="relative my-14 border-l pl-4">
-      <div className="absolute -left-16 select-none">
-        <span className="-mx-1 inline-block rounded-md px-1">Tags</span>
+    <div className="relative my-14 border-l pl-5 md:pl-6">
+      <div className="absolute top-0 -left-16 select-none md:-left-20">
+        <span className="font-editorial text-text-2 -mx-1 inline-block rounded-md px-1 text-[1.05rem] leading-none tracking-[-0.01em]">
+          Tags
+        </span>
       </div>
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-x-3 gap-y-2">
         {tags.map((tag) => (
           <div key={tag} className="inline-block">
             <button
               className={cn(
-                'link group-hover:opacity-60 hover:opacity-100!',
+                'link text-[1rem] leading-7 group-hover:opacity-60 hover:opacity-100!',
                 hasSelected && selectedTag === tag && 'opacity-100!',
                 hasSelected && selectedTag !== tag && 'opacity-40!',
               )}
@@ -69,7 +71,7 @@ function TagFilter({
         ))}
         {hasSelected && (
           <button
-            className="text-text-2 hover:text-text-1 p-1 transition"
+            className="text-text-2 hover:text-text-1 rounded-md p-1 transition"
             onClick={() => setSelectedTag(undefined)}
           >
             <CloseIcon />
@@ -91,25 +93,27 @@ function PostYearList({ posts }: { posts: PostData[] }) {
   ).sort(([yearA], [yearB]) => +yearB - +yearA);
 
   return (
-    <div className="group my-14 space-y-7 border-l pl-4">
+    <div className="group my-14 space-y-10 border-l pl-5 md:pl-6">
       {yearList.map(([year, postList]) => {
         return (
           <div key={year} className="group/year relative">
-            <div className="absolute -left-20 select-none">
-              <h2 className="group-hover/year:bg-gray-soft -mx-1 rounded-md px-1 transition group-hover:opacity-40 group-hover/year:opacity-100!">
+            <div className="absolute top-0 -left-16 select-none md:-left-20">
+              <h2 className="font-editorial text-text-2 group-hover/year:bg-gray-soft -mx-1 rounded-md px-1 text-[1.35rem] leading-none tracking-[-0.01em] transition group-hover:opacity-40 group-hover/year:opacity-100!">
                 {year}
               </h2>
             </div>
-            <ul className="flex flex-col items-start gap-2">
+            <ul className="flex flex-col items-start gap-3">
               {postList.map((post) => {
                 return (
                   <li key={post.slug}>
                     <a
                       href={`/posts/${post.slug}`}
-                      className="hover:bg-gray-soft -mx-1 flex items-center gap-2 rounded-md px-1 transition group-hover:opacity-60 hover:opacity-100!"
+                      className="hover:bg-gray-soft -mx-1 flex items-baseline gap-3 rounded-md px-1 py-0.5 transition group-hover:opacity-60 hover:opacity-100!"
                     >
-                      <span className="text-text-1">{post.data.title}</span>
-                      <span className="text-text-2 shrink-0 text-sm">
+                      <span className="font-editorial text-text-1 max-w-[34rem] text-[1.35rem] leading-[1.15] tracking-[-0.01em]">
+                        {post.data.title}
+                      </span>
+                      <span className="text-text-2 shrink-0 text-sm tabular-nums">
                         {format(new Date(post.data.date), 'MM. dd.')}
                       </span>
                     </a>

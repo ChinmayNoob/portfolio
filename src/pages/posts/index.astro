@@ -8,13 +8,36 @@ const tags = getTags(posts);
 ---
 
 <BaseLayout>
-  <article class="prose-index">
-    <section class="flow mt-10" style="--flow-space: 1.25em">
-      <div class="flex flex-col gap-2">
-        <h1 class="font-editorial text-5xl">Posts</h1>
-        <p class="text-3xl ">Essays, thoughts, and technical writing on development, design, and personal reflection.</p>
+  <article class="prose-index posts-page">
+    <section class="flow mt-10" style="--flow-space: 1.75rem">
+      <div class="posts-hero flow" style="--flow-space: 0.9rem">
+        <h1
+          class="posts-hero-title font-editorial text-[clamp(2rem,5vw,3.1rem)] leading-[1.05] tracking-[-0.02em]"
+        >
+          Posts
+        </h1>
+        <p class="posts-hero-copy text-text-2 text-[1.0625rem]">
+          Essays, thoughts, and technical writing on development, design, and
+          personal reflection.
+        </p>
       </div>
       <PostList client:load posts={posts} tags={tags} />
     </section>
   </article>
 </BaseLayout>
+
+<style>
+  .posts-page {
+    isolation: isolate;
+  }
+
+  .posts-hero-title {
+    text-wrap: balance;
+  }
+
+  .posts-hero-copy {
+    max-width: 40rem;
+    line-height: 1.9;
+    text-wrap: pretty;
+  }
+</style>
