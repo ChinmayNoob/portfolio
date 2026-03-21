@@ -1,0 +1,79 @@
+---
+title: Colophon
+description: The tools, decisions, and people behind this site
+dateModified: 2026-03-21
+img: ['./colophon.jpeg']
+imgAlt: Minimalist colophon page with bold 'COLOPHON' text and publication details.
+---
+
+import FontSample from '~/components/Colophon/FontSample.astro';
+import ColorSwatch from '~/components/Colophon/ColorSwatch.astro';
+import CarbonBadge from '~/components/Colophon/CarbonBadge.astro';
+
+A colophon is traditionally the part of a book that describes how it was made.
+This page serves that purpose for this site.
+
+## About This Site
+
+This site has been my corner of the internet since early 2026 (and in other forms before that).
+It is a portfolio and a notebook: longer posts, a [now](/now) page, [zibaldone](/zibaldone), a [bookshelf](/bookshelf), and whatever else I feel like publishing.
+
+I treat it as a long-term project. I want a stack I enjoy maintaining—mostly static files, minimal runtime, and room to iterate without throwing everything away every year.
+That philosophy shapes most of the technical choices below.
+
+## Technology
+
+The site is built with [Astro](https://astro.build/), a static site generator that ships very little JavaScript by default.
+Content lives in Markdown and MDX next to the code, so I can edit it in any editor and keep it under version control.
+
+Where the UI needs interactivity—things like the posts index, theme toggle, and small client widgets—I reach for [React](https://react.dev/) through Astro’s islands so only those pieces hydrate.
+
+The site is deployed as static HTML on [Vercel](https://vercel.com/). There is no CMS: pages are MDX files in the repo, same workflow as the rest of the codebase.
+
+## Typography
+
+Headings use **Editorial New**; body copy uses **Inter** (with **Source Sans Pro**, **Source Serif Pro**, and **Source Code Pro** in the broader system). Type scales fluidly so sizes track the viewport instead of jumping only at breakpoints.
+
+<FontSample />
+
+## Styling
+
+Color comes from [Radix Colors](https://www.radix-ui.com/colors) (Tomato and Gray scales), exposed as CSS variables for light and dark themes.
+The accent on this site is **Tomato**; neutrals stay in the gray ramp for readable body text and borders.
+
+<ColorSwatch />
+
+## Code
+
+Syntax highlighting in posts uses [Shiki](https://shiki.style/) via the MDX integration, with **GitHub Light Default** in light mode and **GitHub Dark Default** in dark mode—aligned with how code looks in familiar editors.
+
+## Writing
+
+Drafts often start as loose notes; some become posts quickly, others sit until they are honest enough to publish.
+There is no CMS: MDX in git is more friction than a web UI, but the history is portable and the surface area stays small.
+
+## Privacy
+
+Analytics are optional in site config and are not enabled by default.
+There are no ads and no third-party trackers baked into the layout.
+If you reach out by [email](mailto:chinmaypvt04@gmail.com), that stays between us.
+
+## Accessibility
+
+I aim for **WCAG AA** where practical: sufficient contrast in both themes, keyboard-friendly navigation, and respect for reduced motion.
+If something is hard to use with a keyboard or a screen reader, I want to know.
+
+## Energy
+
+Static pages and lean JS keep payloads small. The badge below is a rough, third-party estimate of carbon per page view.
+
+<CarbonBadge />
+
+## Inspiration
+
+- [Eva Decker](https://eva.town/) for digital gardens and a certain calm, intentional personal site energy.
+
+
+## Source
+
+Code and content live in git; you can find my projects and contact links from [GitHub](https://github.com/chinmaynoob).

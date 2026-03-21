@@ -1,0 +1,21 @@
+---
+import PageLayout from '~/components/layout/page-layout.astro';
+import { getCollection } from 'astro:content';
+
+export async function getStaticPaths() {
+  const pages = await getCollection('pages');
+
+  return pages.map((page) => ({
+    params: {
+      id: page.slug.endsWith('/index')
+        ? page.slug.slice(0, -'/index'.length)
+        : page.slug,
+    },
+    props: { page },
+  }));
+}
+
+type Props = Awaited<ReturnType<typeof getStaticPaths>>[number]['props'];
+---
+
+<PageLayout {...Astro.props} />

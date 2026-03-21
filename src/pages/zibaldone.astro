@@ -1,0 +1,261 @@
+---
+import '~/styles/mdx.css';
+
+import { getCollection } from 'astro:content';
+import MarkdownIt from 'markdown-it';
+
+import BaseLayout from '~/components/layout/base-layout.astro';
+import { displayDate } from '~/lib/longDate';
+import { parseZibaldoneEntries } from '~/lib/parseZibaldone';
+
+const md = new MarkdownIt({ html: true, linkify: true, typographer: true });
+
+const files = await getCollection('zibaldone');
+
+const entries = files
+  .flatMap((file) => parseZibaldoneEntries(file.body ?? ''))
+  .sort((a, b) => b.date.getTime() - a.date.getTime());
+
+const colors = ['yellow', 'pink', 'cyan', 'green', 'orange', 'violet'];
+
+function seededRandom(seed: number) {
+  const x = Math.sin(seed) * 10000;
+  return x - Math.floor(x);
+}
+---
+
+<BaseLayout
+  seo={{
+    title: 'Zibaldone',
+    description:
+      "Scattered thoughts, ideas, and quotes from books I've read, films I've watched and rabbit holes.",
+  }}
+>
+  <article class="prose-index zibaldone-page">
+    <section class="flow mt-10" style="--flow-space: 1.75rem">
+      <div class="zibaldone-hero flow" style="--flow-space: 0.9rem">
+        <h1
+          class="zibaldone-hero-title font-editorial text-[clamp(2rem,5vw,3.1rem)] leading-[1.05] tracking-[-0.02em]"
+        >
+          Zibaldone
+        </h1>
+        <p class="zibaldone-hero-copy text-text-2 text-xl font-semibold">
+          Scattered thoughts, ideas, and quotes from books, films and rabbit holes.
+        </p>
+      </div>
+
+      <div class="zibaldone-board">
+        {
+          entries.map((entry, i) => {
+            const color = colors[Math.floor(seededRandom(i * 7) * colors.length)];
+            const rotation = (seededRandom(i * 13) - 0.5) * 6;
+
+            return (
+              <article
+                class="zibaldone-note"
+                data-color={color}
+                style={`--rotation: ${rotation}deg`}
+              >
+                <div class="zibaldone-tape" aria-hidden="true" />
+                <div class="zibaldone-content" set:html={md.render(entry.content)} />
+                <time datetime={entry.date.toISOString()}>
+                  {displayDate(entry.date)}
+                </time>
+              </article>
+            );
+          })
+        }
+      </div>
+    </section>
+  </article>
+</BaseLayout>
+
+<style>
+  .zibaldone-hero-title {
+    text-wrap: balance;
+  }
+
+  .zibaldone-hero-copy {
+    max-width: 40rem;
+    line-height: 1.9;
+    text-wrap: pretty;
+  }
+
+  .zibaldone-hero,
+  .zibaldone-board {
+    max-width: 90rem;
+    margin-inline: auto;
+  }
+
+  .zibaldone-board {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: var(--space-l);
+    padding-inline: var(--space-2xs);
+  }
+
+  .zibaldone-note {
+    position: relative;
+    padding: var(--space-l) var(--space-m) var(--space-m);
+    border-radius: 2px;
+    box-shadow:
+      2px 2px 4px rgba(0, 0, 0, 0.1),
+      4px 8px 16px rgba(0, 0, 0, 0.08);
+    transform: rotate(var(--rotation));
+    transition:
+      transform var(--duration-normal) var(--ease-out),
+      box-shadow var(--duration-normal) var(--ease-out);
+  }
+
+  .zibaldone-note:hover {
+    transform: rotate(0deg) scale(1.02);
+    box-shadow:
+      2px 2px 8px rgba(0, 0, 0, 0.15),
+      8px 16px 32px rgba(0, 0, 0, 0.12);
+    z-index: 10;
+  }
+
+  .zibaldone-note[data-color='yellow'] {
+    background: #fef9c3;
+  }
+  .zibaldone-note[data-color='pink'] {
+    background: #fce7f3;
+  }
+  .zibaldone-note[data-color='cyan'] {
+    background: #cffafe;
+  }
+  .zibaldone-note[data-color='green'] {
+    background: #dcfce7;
+  }
+  .zibaldone-note[data-color='orange'] {
+    background: #ffedd5;
+  }
+  .zibaldone-note[data-color='violet'] {
+    background: #ede9fe;
+  }
+
+  .dark .zibaldone-note[data-color='yellow'] {
+    background: hsl(48 35% 18%);
+  }
+  .dark .zibaldone-note[data-color='pink'] {
+    background: hsl(326 28% 18%);
+  }
+  .dark .zibaldone-note[data-color='cyan'] {
+    background: hsl(189 35% 18%);
+  }
+  .dark .zibaldone-note[data-color='green'] {
+    background: hsl(142 30% 18%);
+  }
+  .dark .zibaldone-note[data-color='orange'] {
+    background: hsl(31 40% 18%);
+  }
+  .dark .zibaldone-note[data-color='violet'] {
+    background: hsl(251 30% 22%);
+  }
+
+  .zibaldone-note[data-color='yellow']::selection,
+  .zibaldone-note[data-color='yellow'] :global(*::selection) {
+    background: #fde047;
+    color: #422006;
+  }
+  .zibaldone-note[data-color='pink']::selection,
+  .zibaldone-note[data-color='pink'] :global(*::selection) {
+    background: #f9a8d4;
+    color: #500724;
+  }
+  .zibaldone-note[data-color='cyan']::selection,
+  .zibaldone-note[data-color='cyan'] :global(*::selection) {
+    background: #67e8f9;
+    color: #083344;
+  }
+  .zibaldone-note[data-color='green']::selection,
+  .zibaldone-note[data-color='green'] :global(*::selection) {
+    background: #86efac;
+    color: #052e16;
+  }
+  .zibaldone-note[data-color='orange']::selection,
+  .zibaldone-note[data-color='orange'] :global(*::selection) {
+    background: #fdba74;
+    color: #431407;
+  }
+  .zibaldone-note[data-color='violet']::selection,
+  .zibaldone-note[data-color='violet'] :global(*::selection) {
+    background: #c4b5fd;
+    color: #2e1065;
+  }
+
+  .zibaldone-tape {
+    position: absolute;
+    top: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 20px;
+    background: rgba(255, 255, 255, 0.6);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+  }
+
+  .dark .zibaldone-tape {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.08);
+  }
+
+  .zibaldone-content {
+    color: var(--c-text-1);
+    font-size: var(--fs-0);
+    line-height: 1.5;
+    margin-bottom: var(--space-s);
+  }
+
+  .zibaldone-content :global(p) {
+    margin-bottom: var(--space-xs);
+  }
+
+  .zibaldone-content :global(p:last-child) {
+    margin-bottom: 0;
+  }
+
+  .zibaldone-content :global(a) {
+    color: var(--c-indigo-2);
+    text-underline-offset: 2px;
+  }
+
+  .zibaldone-content :global(blockquote) {
+    border-left: 2px solid var(--c-border);
+    padding-left: var(--space-s);
+    margin: var(--space-xs) 0;
+    font-style: italic;
+    color: var(--c-text-2);
+  }
+
+  .zibaldone-note time {
+    display: block;
+    font-size: var(--fs--1);
+    color: var(--c-text-3);
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+  }
+
+  @media (max-width: 600px) {
+    .zibaldone-board {
+      grid-template-columns: 1fr;
+      gap: var(--space-m);
+    }
+
+    .zibaldone-note:hover {
+      transform: rotate(var(--rotation)) scale(1.02);
+    }
+  }
+
+  @media (min-width: 601px) and (max-width: 900px) {
+    .zibaldone-board {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (min-width: 901px) and (max-width: 1200px) {
+    .zibaldone-board {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+</style>

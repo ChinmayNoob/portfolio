@@ -1,0 +1,15 @@
+{
+  "name": "Development",
+  "order": 1,
+  "bookmarks": [
+    {
+      "title": "Astro",
+      "url": "https://astro.build",
+      "note": "Static site framework"
+    },
+    {
+      "title": "Tailwind CSS",
+      "url": "https://tailwindcss.com"
+    }
+  ]
+}

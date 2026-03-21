@@ -1,0 +1,150 @@
+---
+import '~/styles/mdx.css';
+
+import type { CollectionEntry } from 'astro:content';
+import { getCollection } from 'astro:content';
+
+import BaseLayout from '~/components/layout/base-layout.astro';
+import PostImage from '~/components/layout/post-image.astro';
+import { displayDate } from '~/lib/longDate';
+
+const entries = await getCollection('now');
+
+entries.sort(
+  (a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime(),
+);
+
+const timelinePosts = await Promise.all(
+  entries.map(async (post: CollectionEntry<'now'>) => {
+    const { Content } = await post.render();
+
+    return {
+      date: post.data.date,
+      ContentComponent: Content,
+    };
+  }),
+);
+---
+
+<BaseLayout
+  seo={{
+    title: 'Now',
+    description:
+      "A snapshot of what I'm currently focused on — projects, routines, and ongoing interests.",
+  }}
+>
+  <article class="prose-index now-page">
+    <section class="flow mt-10" style="--flow-space: 1.75rem">
+      <div class="now-hero flow" style="--flow-space: 0.9rem">
+        <h1
+          class="now-hero-title font-editorial text-[clamp(2rem,5vw,3.1rem)] leading-[1.05] tracking-[-0.02em]"
+        >
+          Now
+        </h1>
+        <p class="now-hero-copy text-text-2 text-xl font-semibold">
+          What I'm up to right now
+        </p>
+      </div>
+
+      <div class="now-timeline">
+        {
+          timelinePosts.map((post) => (
+            <div class="timeline-post">
+              <div class="timeline-marker" aria-hidden="true" />
+              <div class="post-content">
+                <p class="now-date">{displayDate(post.date)}</p>
+                <div class="now-entry-body mdx">
+                  <post.ContentComponent components={{ img: PostImage }} />
+                </div>
+              </div>
+            </div>
+          ))
+        }
+      </div>
+    </section>
+  </article>
+</BaseLayout>
+
+<style>
+  .now-page {
+    isolation: isolate;
+  }
+
+  .now-hero-title {
+    text-wrap: balance;
+  }
+
+  .now-hero-copy {
+    max-width: 40rem;
+    line-height: 1.9;
+    text-wrap: pretty;
+  }
+
+  .now-timeline,
+  .now-hero {
+    max-width: 42rem;
+  }
+
+  .now-timeline {
+    position: relative;
+  }
+
+  .now-timeline::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 5px;
+    width: 2px;
+    background-color: var(--tomato-9);
+  }
+
+  .timeline-post {
+    position: relative;
+    margin-bottom: var(--space-xl);
+  }
+
+  .timeline-post:last-child {
+    margin-bottom: 0;
+  }
+
+  .timeline-marker {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 12px;
+    height: 12px;
+  }
+
+  .timeline-marker::before {
+    content: '';
+    position: absolute;
+    top: 5px;
+    left: 0;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: var(--tomato-9);
+  }
+
+  .post-content {
+    padding-left: var(--space-l);
+  }
+
+  .now-entry-body {
+    margin: var(--space-3xs) 0;
+  }
+
+  .now-entry-body :global(p) {
+    margin-bottom: var(--space-xs);
+  }
+
+  .now-entry-body :global(p:last-child) {
+    margin-bottom: 0;
+  }
+
+  .now-date {
+    color: var(--gray-12);
+    font-weight: 500;
+  }
+</style>

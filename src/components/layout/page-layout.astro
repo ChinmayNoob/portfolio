@@ -1,0 +1,127 @@
+---
+import '@shikijs/twoslash/style-rich.css';
+import '~/styles/mdx.css';
+
+import type { CollectionEntry } from 'astro:content';
+import BaseLayout from '~/components/layout/base-layout.astro';
+import MediumZoomScript from '~/components/script/medium-zoom-script.astro';
+import TwoslashFloatingScript from '~/components/script/twoslash-floating-script.astro';
+import CopyCodeScript from '~/components/script/copy-code-script.astro';
+import PostImage from '~/components/layout/post-image.astro';
+import BaseBio from '~/components/layout/base-bio.astro';
+
+type Props = {
+  page: CollectionEntry<'pages' | 'blogroll'>;
+};
+
+const { page } = Astro.props;
+
+const { Content } = await page.render();
+
+const pagesImageGlob = import.meta.glob<string>(
+  '../../content/pages/**/*.{jpeg,jpg,png,gif,webp}',
+  {
+    eager: true,
+    query: '?url',
+    import: 'default',
+  },
+);
+const blogrollImageGlob = import.meta.glob<string>(
+  '../../content/blogroll/**/*.{jpeg,jpg,png,gif,webp}',
+  {
+    eager: true,
+    query: '?url',
+    import: 'default',
+  },
+);
+const imageUrlModules = { ...pagesImageGlob, ...blogrollImageGlob };
+
+const rawImg = page.data.img?.[0];
+const filename = rawImg?.replace(/^\.\//, '') ?? '';
+const isContentRelative =
+  rawImg &&
+  (rawImg.startsWith('./') ||
+    (!rawImg.startsWith('/') && !rawImg.startsWith('http')));
+
+const heroKey =
+  isContentRelative && filename
+    ? Object.keys(imageUrlModules).find((key) =>
+        key.replace(/\\/g, '/').endsWith(`/${filename}`),
+      )
+    : undefined;
+const heroContentUrl = heroKey ? imageUrlModules[heroKey] : undefined;
+const heroPublicSrc =
+  rawImg && !heroContentUrl && !rawImg.startsWith('./')
+    ? rawImg.startsWith('http') || rawImg.startsWith('/')
+      ? rawImg
+      : `/${rawImg.replace(/^\//, '')}`
+    : undefined;
+
+const heroAlt = page.data.imgAlt ?? '';
+---
+
+<BaseLayout
+  seo={{
+    title: page.data.title,
+    description: page.data.description,
+  }}
+>
+  <header class="page-header mb-10">
+    <h1
+      class="page-title font-editorial text-[clamp(2rem,5vw,3.1rem)] leading-[1.05] tracking-[-0.02em]"
+    >
+      {page.data.title}
+    </h1>
+    <p
+      class="page-lede font-sans mt-3 text-[1.25rem] leading-snug font-semibold text-text-1"
+    >
+      {page.data.description}
+    </p>
+  </header>
+  {
+    heroContentUrl && (
+      <div class="page-hero mb-10">
+        <figure class="m-0">
+          <img
+            src={heroContentUrl}
+            alt={heroAlt}
+            class="h-auto w-full rounded-md"
+            loading="eager"
+            decoding="async"
+          />
+        </figure>
+      </div>
+    )
+  }
+  {
+    !heroContentUrl && heroPublicSrc && (
+      <div class="page-hero mb-10">
+        <PostImage src={heroPublicSrc} alt={heroAlt} />
+      </div>
+    )
+  }
+  <article class="mdx page-body">
+    <Content components={{ img: PostImage }} />
+  </article>
+  <div class="page-footer flex flex-col">
+    <div class="mt-10 mb-10">
+      <BaseBio />
+    </div>
+  </div>
+  <MediumZoomScript />
+  <TwoslashFloatingScript />
+  <CopyCodeScript />
+</BaseLayout>
+
+<style>
+  .page-title {
+    text-wrap: balance;
+  }
+
+  .page-header,
+  .page-hero,
+  .page-body,
+  .page-footer {
+    max-width: 42rem;
+  }
+</style>

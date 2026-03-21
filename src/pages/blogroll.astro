@@ -1,0 +1,13 @@
+---
+import PageLayout from '~/components/layout/page-layout.astro';
+import { getCollection } from 'astro:content';
+
+const entries = await getCollection('blogroll');
+const page = entries.find((e) => e.slug === 'index' || e.id === 'index');
+
+if (!page) {
+  return Astro.redirect('/404');
+}
+---
+
+<PageLayout page={page} />

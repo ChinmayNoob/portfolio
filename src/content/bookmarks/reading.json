@@ -1,0 +1,10 @@
+{
+  "name": "Reading",
+  "order": 2,
+  "bookmarks": [
+    {
+      "title": "MDN Web Docs",
+      "url": "https://developer.mozilla.org"
+    }
+  ]
+}

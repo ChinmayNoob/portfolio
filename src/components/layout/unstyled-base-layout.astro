@@ -1,0 +1,51 @@
+---
+import '~/styles/global.css';
+
+import { ClientRouter } from 'astro:transitions';
+
+import { cfg } from '~/cfg';
+import BaseHead from '~/components/layout/base-head.astro';
+import type { SEO } from '~/lib/types';
+
+type Props = {
+  seo?: SEO;
+};
+
+const { seo } = Astro.props;
+---
+
+<html lang={cfg.lang} transition:animate="none" class="bookmarks-html">
+  <head>
+    <BaseHead seo={seo} />
+    <ClientRouter />
+  </head>
+  <body class="bookmarks-body">
+    <slot />
+  </body>
+</html>
+
+<style is:global>
+  html.bookmarks-html,
+  html.bookmarks-html body.bookmarks-body {
+    margin: 0;
+    min-height: 100dvh;
+    height: 100%;
+  }
+
+  html.bookmarks-html body.bookmarks-body {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: none;
+    background-color: var(--c-bg);
+    color: var(--c-text-1);
+  }
+
+  html.bookmarks-html body.bookmarks-body > * {
+    flex: 1 1 auto;
+    min-height: 0;
+    min-width: 0;
+    width: 100%;
+    max-width: none;
+  }
+</style>

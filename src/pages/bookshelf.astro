@@ -1,0 +1,74 @@
+---
+import BaseLayout from '~/components/layout/base-layout.astro';
+import BookCard from '~/components/book-card.astro';
+import { getCollection } from 'astro:content';
+
+const bookEntries = await getCollection('books');
+const books = bookEntries
+  .map((entry) => entry.data)
+  .sort((a, b) => a.title.localeCompare(b.title));
+---
+
+<BaseLayout
+  seo={{
+    title: 'Bookshelf',
+    description:
+      'Books I have read and books I like the idea of having read — a small shelf of things that shaped my thinking or offered a good escape.',
+  }}
+>
+  <article class="prose-index bookshelf-page">
+    <section class="flow mt-10" style="--flow-space: 1.75rem">
+      <div class="bookshelf-hero flow" style="--flow-space: 0.9rem">
+        <h1
+          class="bookshelf-hero-title font-editorial text-[clamp(2rem,5vw,3.1rem)] leading-[1.05] tracking-[-0.02em]"
+        >
+          Bookshelf
+        </h1>
+        <p class="bookshelf-hero-copy text-text-2 text-[1.0625rem]">
+          Books I have read and books I like the idea of having read.
+        </p>
+      </div>
+      <div class="bookshelf-wrapper">
+        <div class="bookshelf-grid">
+          {books.map((book) => <BookCard book={book} />)}
+        </div>
+      </div>
+    </section>
+  </article>
+</BaseLayout>
+
+<style>
+  .bookshelf-page {
+    isolation: isolate;
+  }
+
+  .bookshelf-hero-title {
+    text-wrap: balance;
+  }
+
+  .bookshelf-hero-copy {
+    max-width: 40rem;
+    line-height: 1.9;
+    text-wrap: pretty;
+  }
+
+  .bookshelf-wrapper {
+    max-width: 80rem;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 0 0 3rem;
+  }
+
+  .bookshelf-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.25rem 2rem;
+  }
+
+  @media (min-width: 640px) {
+    .bookshelf-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1rem 2rem;
+    }
+  }
+</style>
