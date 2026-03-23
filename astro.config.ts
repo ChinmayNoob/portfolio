@@ -22,60 +22,58 @@ import { remarkReadingTime } from './plugins/remark-reading-time.mjs';
 import { transformerFragment } from './plugins/transformer-fragment';
 import { cfg } from './src/cfg';
 
+import db from '@astrojs/db';
+
 // https://astro.build/config
 export default defineConfig({
   site: cfg.siteUrl,
-  output: 'static',
+  output: 'server',
   adapter: vercel(),
   vite: {
     plugins: [tailwindcss()],
   },
-  integrations: [
-    sitemap(),
-    react(),
-    mdx({
-      shikiConfig: {
-        defaultColor: false,
-        themes: {
-          light: 'github-light-default',
-          dark: 'github-dark-default',
-        },
-        transformers: [
-          transformerTwoslash({
-            explicitTrigger: true,
-          }),
-          transformerNotationHighlight(),
-          transformerNotationDiff(),
-          transformerNotationFocus(),
-          transformerNotationErrorLevel(),
-          transformerMetaHighlight(),
-          transformerMetaWordHighlight(),
-          transformerFragment(),
-        ],
+  integrations: [sitemap(), react(), mdx({
+    shikiConfig: {
+      defaultColor: false,
+      themes: {
+        light: 'github-light-default',
+        dark: 'github-dark-default',
       },
-      remarkPlugins: [remarkBreaks, remarkReadingTime],
-      rehypePlugins: [
-        rehypeSlug,
-        [
-          rehypeAutolinkHeadings,
-          {
-            behavior: 'wrap',
-            properties: {
-              className: ['anchor'],
-            },
-          },
-        ],
-        [
-          rehypeExternalLinks,
-          {
-            properties: {
-              class: 'external link',
-            },
-            target: '_blank',
-            rel: ['noopener noreferrer'],
-          },
-        ],
+      transformers: [
+        transformerTwoslash({
+          explicitTrigger: true,
+        }),
+        transformerNotationHighlight(),
+        transformerNotationDiff(),
+        transformerNotationFocus(),
+        transformerNotationErrorLevel(),
+        transformerMetaHighlight(),
+        transformerMetaWordHighlight(),
+        transformerFragment(),
       ],
-    }),
-  ],
+    },
+    remarkPlugins: [remarkBreaks, remarkReadingTime],
+    rehypePlugins: [
+      rehypeSlug,
+      [
+        rehypeAutolinkHeadings,
+        {
+          behavior: 'wrap',
+          properties: {
+            className: ['anchor'],
+          },
+        },
+      ],
+      [
+        rehypeExternalLinks,
+        {
+          properties: {
+            class: 'external link',
+          },
+          target: '_blank',
+          rel: ['noopener noreferrer'],
+        },
+      ],
+    ],
+  }), db()],
 });
