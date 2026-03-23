@@ -345,10 +345,12 @@ footer {
   --h: min(96px, var(--spacing-page-y));
   position: fixed;
   top: 0;
+  left: 0;
+  right: 0;
   z-index: 1;
-  width: calc(100% + var(--spacing-page-x) * 2);
+  width: auto;
   height: var(--h);
-  margin-left: calc(-1 * var(--spacing-page-x));
+  margin-left: 0;
   margin-bottom: calc(-1 * var(--h));
   pointer-events: none;
   user-select: none;
