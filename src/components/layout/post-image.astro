@@ -1,5 +1,6 @@
 ---
 import fs from 'node:fs/promises';
+import path from 'node:path';
 
 import { getPlaiceholder } from 'plaiceholder';
 
@@ -12,21 +13,34 @@ const { src, alt } = Astro.props;
 
 const isValidCaption = alt && Number.isInteger(+alt[0]) === false;
 
-const getImageBuffer = async (src: string) => {
-  const isExternalImage = src.startsWith('https');
-
-  if (isExternalImage) {
-    const res = await fetch(src);
+const getImageBuffer = async (imageSrc: string) => {
+  if (imageSrc.startsWith('http://') || imageSrc.startsWith('https://')) {
+    const res = await fetch(imageSrc);
+    if (!res.ok) {
+      throw new Error(`Failed to fetch image: ${res.status}`);
+    }
     return Buffer.from(await res.arrayBuffer());
   }
 
-  if (src.startsWith('/')) {
-    src = src.slice(1);
-  }
+  const normalized = imageSrc.startsWith('/') ? imageSrc : `/${imageSrc}`;
 
-  const localSrc = `public/${src}`;
-  const file = await fs.readFile(localSrc);
-  return Buffer.from(file);
+  // Vercel serverless has no `public/` next to the function — read from deployed static URL first.
+  const origin =
+    Astro.url?.origin ||
+    (Astro.site ? new URL(Astro.site).origin : 'http://localhost:4321');
+
+  try {
+    const res = await fetch(new URL(normalized, origin));
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status}`);
+    }
+    return Buffer.from(await res.arrayBuffer());
+  } catch {
+    const relative = normalized.replace(/^\//, '');
+    const filePath = path.join(process.cwd(), 'public', relative);
+    const file = await fs.readFile(filePath);
+    return Buffer.from(file);
+  }
 };
 
 const imageBuffer = await getImageBuffer(src);
