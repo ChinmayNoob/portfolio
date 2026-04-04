@@ -1,21 +1,43 @@
 ---
+import { getCollection, getEntry } from 'astro:content';
 import PostLayout from '~/components/layout/post-layout.astro';
-import { getPostsCollection, getRelatedPosts } from '~/lib/mdx/post';
+import {
+  getPostsCollection,
+  getRelatedPosts,
+  isDraft,
+} from '~/lib/mdx/post';
 
-const slug = Astro.params.slug;
-const posts = await getPostsCollection();
-const index = posts.findIndex(
-  (post) => post.slug === slug || post.slug === `${slug}/index`,
-);
+const rawSlug = Astro.params.slug;
+const slug =
+  rawSlug == null
+    ? ''
+    : Array.isArray(rawSlug)
+      ? rawSlug.join('/')
+      : rawSlug;
 
-if (index === -1) {
+if (!slug) {
   return new Response(null, { status: 404, statusText: 'Not Found' });
 }
 
-const post = posts[index];
+let post = await getEntry('posts', slug);
+
+if (!post) {
+  const allPosts = await getCollection('posts');
+  post =
+    allPosts.find((p) => p.slug === slug || p.slug === `${slug}/index`) ??
+    undefined;
+}
+
+if (!post || isDraft(post)) {
+  return new Response(null, { status: 404, statusText: 'Not Found' });
+}
+
+const posts = await getPostsCollection();
+const index = posts.findIndex((p) => p.id === post.id);
+
+const prevPost = index >= 0 ? posts[index + 1] : undefined;
+const nextPost = index >= 0 ? posts[index - 1] : undefined;
 const relatedPosts = getRelatedPosts(post, posts);
-const prevPost = posts[index + 1];
-const nextPost = posts[index - 1];
 ---
 
 <PostLayout

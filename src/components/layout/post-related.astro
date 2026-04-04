@@ -6,14 +6,18 @@ interface Props {
 }
 
 const { relatedPosts } = Astro.props;
+
+const safeRelated = relatedPosts.filter(
+  (p): p is CollectionEntry<'posts'> => Boolean(p?.data?.title),
+);
 ---
 
 {
-  relatedPosts.length && (
+  safeRelated.length > 0 && (
     <div class="text-text-2">
       <p>Related Posts</p>
       <ul>
-        {relatedPosts.map((p) => {
+        {safeRelated.map((p) => {
           return (
             <li>
               <span class="font-mono">&gt; </span>

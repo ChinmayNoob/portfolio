@@ -37,6 +37,7 @@ export const getRelatedPosts = (
     })
     .toSorted((a, b) => b.similarity - a.similarity)
     .map((p) => p.post)
+    .filter((p): p is CollectionEntry<'posts'> => p != null && p.data != null)
     .slice(0, 4);
 };
 
