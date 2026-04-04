@@ -134,24 +134,7 @@ function seededRandom(seed: number) {
     background: #ede9fe;
   }
 
-  .dark .zibaldone-note[data-color='yellow'] {
-    background: hsl(48 35% 18%);
-  }
-  .dark .zibaldone-note[data-color='pink'] {
-    background: hsl(326 28% 18%);
-  }
-  .dark .zibaldone-note[data-color='cyan'] {
-    background: hsl(189 35% 18%);
-  }
-  .dark .zibaldone-note[data-color='green'] {
-    background: hsl(142 30% 18%);
-  }
-  .dark .zibaldone-note[data-color='orange'] {
-    background: hsl(31 40% 18%);
-  }
-  .dark .zibaldone-note[data-color='violet'] {
-    background: hsl(251 30% 22%);
-  }
+  /* Keep pastel note paper in dark mode; text uses fixed ink colors below. */
 
   .zibaldone-note[data-color='yellow']::selection,
   .zibaldone-note[data-color='yellow'] :global(*::selection) {
@@ -195,13 +178,9 @@ function seededRandom(seed: number) {
     border: 1px solid rgba(0, 0, 0, 0.05);
   }
 
-  .dark .zibaldone-tape {
-    background: rgba(255, 255, 255, 0.12);
-    border-color: rgba(255, 255, 255, 0.08);
-  }
-
   .zibaldone-content {
-    color: var(--c-text-1);
+    /* Fixed “ink” on paper: do not use theme text tokens (they go light in dark mode). */
+    color: #1c1917;
     font-size: var(--fs-0);
     line-height: 1.5;
     margin-bottom: var(--space-s);
@@ -209,6 +188,17 @@ function seededRandom(seed: number) {
 
   .zibaldone-content :global(p) {
     margin-bottom: var(--space-xs);
+    color: inherit;
+  }
+
+  .zibaldone-content :global(li) {
+    margin-bottom: 0.25em;
+    color: inherit;
+  }
+
+  .zibaldone-content :global(strong),
+  .zibaldone-content :global(em) {
+    color: inherit;
   }
 
   .zibaldone-content :global(p:last-child) {
@@ -216,22 +206,26 @@ function seededRandom(seed: number) {
   }
 
   .zibaldone-content :global(a) {
-    color: var(--c-indigo-2);
+    color: #3730a3;
     text-underline-offset: 2px;
   }
 
+  .zibaldone-content :global(a:hover) {
+    color: #312e81;
+  }
+
   .zibaldone-content :global(blockquote) {
-    border-left: 2px solid var(--c-border);
+    border-left: 2px solid rgba(0, 0, 0, 0.18);
     padding-left: var(--space-s);
     margin: var(--space-xs) 0;
     font-style: italic;
-    color: var(--c-text-2);
+    color: #44403c;
   }
 
   .zibaldone-note time {
     display: block;
     font-size: var(--fs--1);
-    color: var(--c-text-3);
+    color: #57534e;
     font-variant-numeric: tabular-nums;
     text-align: right;
   }
