@@ -2,25 +2,25 @@
 import PostLayout from '~/components/layout/post-layout.astro';
 import { getPostsCollection, getRelatedPosts } from '~/lib/mdx/post';
 
-export async function getStaticPaths() {
-  const posts = await getPostsCollection();
+const slug = Astro.params.slug;
+const posts = await getPostsCollection();
+const index = posts.findIndex(
+  (post) => post.slug === slug || post.slug === `${slug}/index`,
+);
 
-  return posts.map((post, i) => {
-    const relatedPosts = getRelatedPosts(post, posts);
-
-    return {
-      params: { slug: post.slug },
-      props: {
-        post,
-        prevPost: posts[i + 1],
-        nextPost: posts[i - 1],
-        relatedPosts,
-      },
-    };
-  });
+if (index === -1) {
+  return new Response(null, { status: 404, statusText: 'Not Found' });
 }
 
-type Props = Awaited<ReturnType<typeof getStaticPaths>>[number]['props'];
+const post = posts[index];
+const relatedPosts = getRelatedPosts(post, posts);
+const prevPost = posts[index + 1];
+const nextPost = posts[index - 1];
 ---
 
-<PostLayout {...Astro.props} />
+<PostLayout
+  post={post}
+  prevPost={prevPost}
+  nextPost={nextPost}
+  relatedPosts={relatedPosts}
+/>

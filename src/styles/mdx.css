@@ -61,6 +61,25 @@
   margin-top: 0px;
 }
 
+/* Editorial “verse” block: same family as h3, slightly smaller, tighter line gaps */
+.mdx > .mdx-editorial-lines {
+  font-family: var(--font-editorial);
+  font-size: 1.22rem;
+  line-height: 1.42;
+  font-weight: 400;
+  letter-spacing: 0.03em;
+  color: var(--c-text-1);
+}
+
+.mdx > .mdx-editorial-lines p {
+  margin: 0 0 2em;
+  text-wrap: pretty;
+}
+
+.mdx > .mdx-editorial-lines p:last-child {
+  margin-bottom: 0;
+}
+
 .mdx b,
 .mdx strong {
   font-weight: var(--font-weight-bold);
