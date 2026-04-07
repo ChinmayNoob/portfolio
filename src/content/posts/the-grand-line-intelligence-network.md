@@ -14,6 +14,8 @@ If you spend enough time around distributed systems, you’ll eventually hear ab
 
 And honestly, **One Piece** is a perfect way to understand why.The World Government rules the seas with one weapon above all others that is ***information***.Who is where,what their bounty is, which pirate crew is rising, which Warlord has gone rougue. The intelligence network is their true power. And likely every distributed systems, it has its own cracks.
 
+![Head](/assets/posts/cap/head.jpg)
+
 ### Chapter 1: The Single Transponder Snail.
 
 In the early days, all intelligence flowed through a single enormous Transponder Snail at Marineford HQ.One Veteran Operator let's call her Officer Hana, managed the master ledger. Every bounty update,every pirate sighting, every ship movement was recorded by her and only her.The system was perfect in one way; **everyone got the same answer**.If you called asking about Gold Roger's Bounty,Hana told you. If you called an hour later, same answer.*One ledger,One Truth*.
