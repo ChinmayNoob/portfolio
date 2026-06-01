@@ -2,6 +2,7 @@ import { defineCollection } from 'astro:content';
 import {
   bookSchema,
   bookmarkFolderSchema,
+  miniProjectSchema,
   nowSchema,
   pageSchema,
   postSchema,
@@ -49,6 +50,11 @@ const projectsCollection = defineCollection({
   schema: projectSchema,
 });
 
+const miniProjectsCollection = defineCollection({
+  type: 'content',
+  schema: miniProjectSchema,
+});
+
 export const collections = {
   posts: postsCollection,
   pages: pagesCollection,
@@ -58,4 +64,5 @@ export const collections = {
   bookmarks: bookmarksCollection,
   blogroll: blogrollCollection,
   projects: projectsCollection,
+  'mini-projects': miniProjectsCollection,
 };

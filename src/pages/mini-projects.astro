@@ -1,0 +1,263 @@
+---
+import { getCollection } from 'astro:content';
+
+import BaseLayout from '~/components/layout/base-layout.astro';
+
+const raw = await getCollection('mini-projects');
+const miniProjects = raw.sort((a, b) => {
+  const ao = a.data.sortOrder ?? 9999;
+  const bo = b.data.sortOrder ?? 9999;
+  return ao - bo;
+});
+---
+
+<BaseLayout
+  seo={{
+    title: 'Mini Projects',
+    description:
+      'Smaller projects, experiments, and things I built for fun.',
+  }}
+>
+  <article class="prose-index mini-projects-page">
+    <section class="flow mt-10" style="--flow-space: 1.75rem">
+      <div class="mini-projects-hero flow" style="--flow-space: 0.9rem">
+        <h1
+          class="mini-projects-title font-editorial text-[clamp(2rem,5vw,3.1rem)] leading-[1.05] tracking-[-0.02em]"
+        >
+          Mini Projects
+        </h1>
+        <p class="mini-projects-lede text-text-2 text-xl font-semibold">
+          Smaller builds, experiments, and weekend projects.
+        </p>
+      </div>
+
+      <ul class="mini-projects-list" role="list">
+        {
+          miniProjects.map((project) => {
+            const hasLinks = Boolean(project.data.liveUrl || project.data.githubUrl);
+            return (
+              <li>
+                <article
+                  class="mini-project-card"
+                  aria-labelledby={`mini-project-${project.id.replace(/\W/g, '-')}-title`}
+                >
+                  <div class="mini-project-card-top">
+                    <h2
+                      id={`mini-project-${project.id.replace(/\W/g, '-')}-title`}
+                      class="mini-project-card-title font-editorial text-lg leading-snug tracking-[-0.02em] text-text-1 md:text-xl"
+                    >
+                      {project.data.title}
+                    </h2>
+                  </div>
+
+                  <p class="mini-project-card-desc text-text-1">{project.data.description}</p>
+
+                  <dl class="mini-project-card-meta">
+                    <div class="mini-project-meta-row">
+                      <dt>Stack</dt>
+                      <dd>{project.data.technologies}</dd>
+                    </div>
+                  </dl>
+
+                  {hasLinks ? (
+                    <nav
+                      class="mini-project-card-links"
+                      aria-label={`Links for ${project.data.title}`}
+                    >
+                      {project.data.liveUrl ? (
+                        <a
+                          href={project.data.liveUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          class="mini-project-link"
+                        >
+                          Live
+                        </a>
+                      ) : null}
+                      {project.data.githubUrl ? (
+                        <a
+                          href={project.data.githubUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          class="mini-project-link"
+                        >
+                          Code
+                        </a>
+                      ) : null}
+                    </nav>
+                  ) : null}
+                </article>
+              </li>
+            );
+          })
+        }
+      </ul>
+
+      <div class="mini-projects-back">
+        <a href="/projects" class="mini-projects-back-link">
+          &larr; Back to projects
+        </a>
+      </div>
+    </section>
+  </article>
+</BaseLayout>
+
+<style>
+  .mini-projects-page {
+    isolation: isolate;
+    width: 100%;
+    max-width: 42rem;
+    margin-inline: auto;
+    overflow-x: visible;
+  }
+
+  .mini-projects-title {
+    text-wrap: balance;
+  }
+
+  .mini-projects-lede {
+    max-width: 40rem;
+    line-height: 1.75;
+    text-wrap: pretty;
+  }
+
+  .mini-projects-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .mini-project-card {
+    box-sizing: border-box;
+    width: 100%;
+    border: 1px solid var(--gray-6);
+    border-radius: 0.5rem;
+    padding: 0.85rem 1rem;
+    background: var(--gray-1);
+    transition:
+      border-color 180ms ease-out,
+      background-color 180ms ease-out;
+  }
+
+  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    .mini-project-card:hover {
+      border-color: var(--gray-8);
+      background: var(--gray-2);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .mini-project-card {
+      transition: none;
+    }
+  }
+
+  .mini-project-card:focus-within {
+    border-color: var(--tomato-9);
+    outline: none;
+  }
+
+  .mini-project-card-top {
+    margin-bottom: 0.35rem;
+  }
+
+  .mini-project-card-title {
+    text-wrap: balance;
+    margin: 0;
+  }
+
+  .mini-project-card-desc {
+    margin: 0 0 0.6rem;
+    line-height: 1.5;
+    text-wrap: pretty;
+    font-size: 0.925rem;
+    color: var(--gray-12);
+  }
+
+  .mini-project-card-meta {
+    display: grid;
+    gap: 0.35rem;
+    margin: 0 0 0.4rem;
+    font-size: 0.8rem;
+    line-height: 1.45;
+    color: var(--gray-11);
+  }
+
+  .mini-project-meta-row {
+    display: grid;
+    grid-template-columns: 4rem 1fr;
+    gap: 0.65rem;
+    align-items: baseline;
+  }
+
+  .mini-project-meta-row dt {
+    margin: 0;
+    font-weight: 600;
+    font-size: 0.65rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--gray-10);
+  }
+
+  .mini-project-meta-row dd {
+    margin: 0;
+    color: var(--gray-12);
+  }
+
+  .mini-project-card-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 0.5rem;
+    align-items: center;
+    margin-top: 0.15rem;
+  }
+
+  .mini-project-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
+    padding: 0 0.65rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-color: transparent;
+    color: var(--gray-12);
+    border-radius: 0.375rem;
+    transition: text-decoration-color 160ms ease-out, color 160ms ease-out;
+  }
+
+  @media (hover: hover) {
+    .mini-project-link:hover {
+      text-decoration-color: var(--tomato-9);
+      color: var(--tomato-11);
+    }
+  }
+
+  .mini-project-link:focus-visible {
+    outline: 2px solid var(--tomato-9);
+    outline-offset: 2px;
+  }
+
+  .mini-projects-back {
+    margin-top: 1rem;
+  }
+
+  .mini-projects-back-link {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--gray-11);
+    text-decoration: none;
+    transition: color 160ms ease-out;
+  }
+
+  @media (hover: hover) {
+    .mini-projects-back-link:hover {
+      color: var(--tomato-11);
+    }
+  }
+</style>

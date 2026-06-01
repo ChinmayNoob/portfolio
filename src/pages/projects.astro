@@ -52,6 +52,11 @@ const allTags = [...tagRegistry.values()].sort((a, b) => a.localeCompare(b));
         <p class="projects-lede text-text-2 text-xl font-semibold">
           Some of my favorite things I've built.
         </p>
+        <p class="projects-mini-link">
+          <a href="/mini-projects" class="projects-mini-link-anchor">
+            Also check out my mini projects &rarr;
+          </a>
+        </p>
       </div>
 
       <ProjectsTagFilter
@@ -328,5 +333,26 @@ const allTags = [...tagRegistry.values()].sort((a, b) => a.localeCompare(b));
   .project-link:focus-visible {
     outline: 2px solid var(--tomato-9);
     outline-offset: 2px;
+  }
+
+  .projects-mini-link {
+    margin: 0;
+  }
+
+  .projects-mini-link-anchor {
+    font-size: 0.925rem;
+    font-weight: 500;
+    color: var(--gray-11);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-color: var(--gray-8);
+    transition: color 160ms ease-out, text-decoration-color 160ms ease-out;
+  }
+
+  @media (hover: hover) {
+    .projects-mini-link-anchor:hover {
+      color: var(--tomato-11);
+      text-decoration-color: var(--tomato-9);
+    }
   }
 </style>

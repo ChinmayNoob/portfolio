@@ -74,6 +74,16 @@ export const projectSchema = z.object({
 });
 export type Project = z.infer<typeof projectSchema>;
 
+export const miniProjectSchema = z.object({
+  title: z.string(),
+  description: z.string(),
+  technologies: z.string(),
+  githubUrl: z.string().url().optional(),
+  liveUrl: z.string().url().optional(),
+  sortOrder: z.number().optional(),
+});
+export type MiniProject = z.infer<typeof miniProjectSchema>;
+
 // to not importing CollectionEntry from astro:content
 export type PostData = {
   id: string;
