@@ -76,6 +76,55 @@
   text-decoration-color: var(--tomato-9);
 }
 
+.mobile-nav-wrapper {
+  position: relative;
+  z-index: 2;
+  padding: var(--spacing-page-x);
+}
+
+.mobile-nav {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.mobile-nav-links {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.125rem;
+  width: 100%;
+}
+
+.mobile-nav nav a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: transparent;
+  transition: text-decoration-color 200ms ease;
+}
+
+.mobile-nav nav a:hover {
+  text-decoration-color: currentColor;
+}
+
+.mobile-nav .mobile-nav-link-active {
+  color: var(--tomato-9);
+  text-decoration-color: var(--tomato-9);
+}
+
+@media (min-width: 1200px) {
+  .mobile-nav-wrapper,
+  .mobile-nav {
+    display: none;
+  }
+}
+
+@media (max-width: 1199px) {
+  .base-nav {
+    display: none;
+  }
+}
+
 @media (min-width: 1200px) {
   .page-nav-rail {
     position: absolute;
