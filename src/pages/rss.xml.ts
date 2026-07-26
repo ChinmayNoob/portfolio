@@ -9,14 +9,15 @@ export const GET: APIRoute = async () => {
   return rss({
     title: cfg.title,
     description: cfg.description,
-    // https://docs.astro.build/en/reference/api-reference/#contextsite
     site: cfg.siteUrl,
-    items: postList.map((post) => {
-      return {
-        title: post.data.title,
-        description: post.data.description,
-        link: `/posts/${post.slug}`,
-      };
-    }),
+    stylesheet: '/rss/styles.xsl',
+    customData: '<language>en-us</language>',
+    items: postList.map((post) => ({
+      title: post.data.title,
+      description: post.data.description,
+      pubDate: post.data.date,
+      link: `/posts/${post.slug}`,
+      categories: post.data.tags ?? [],
+    })),
   });
 };
