@@ -1,88 +1,133 @@
 ---
+import { getCollection } from 'astro:content';
+
 import BaseBio from '~/components/layout/base-bio.astro';
 import BaseLayout from '~/components/layout/base-layout.astro';
-import { ArrowRightUpIcon } from '~/components/ui/icons';
+import { getPostsCollection } from '~/lib/mdx/post';
+import { nowPlaying } from '~/data/listening';
+
+const recentPosts = (await getPostsCollection()).slice(0, 1).map((post) => ({
+  title: post.data.title,
+  href: `/posts/${post.slug}`,
+  dateLabel: post.data.date.toLocaleDateString('en-US', {
+    month: 'short',
+    year: 'numeric',
+  }),
+}));
+
+const rawProjects = await getCollection('projects');
+rawProjects.sort((a, b) => {
+  const ao = a.data.sortOrder;
+  const bo = b.data.sortOrder;
+  if (ao != null || bo != null) {
+    const av = ao ?? 9999;
+    const bv = bo ?? 9999;
+    if (av !== bv) return av - bv;
+  }
+  return (
+    b.data.year - a.data.year || a.data.title.localeCompare(b.data.title)
+  );
+});
+const recentProjects = rawProjects.slice(0, 1).map((project) => {
+  const href = project.data.liveUrl || project.data.githubUrl || '/projects';
+  return {
+    title: project.data.title,
+    year: project.data.year,
+    href,
+    external: href.startsWith('http'),
+  };
+});
 ---
 
 <BaseLayout>
   <article class="prose-index home-page">
     <section class="flow home-stack mt-10" style="--flow-space: 1.75rem">
-      <h1
-        class="home-intro-copy font-editorial text-[clamp(2rem,5vw,3.1rem)] leading-[1.05] tracking-[-0.02em]"
-        data-home-animate
-      >
-        I'm a backend focused full stack developer. I spend my days building
-        systems you don't see, interfaces you remember when it's needed, and
-        figuring out how to make ideas work better on the web.
-      </h1>
-
       <div class="pt-4" data-home-animate>
         <BaseBio />
       </div>
 
-      <section
-        class="home-section flow"
-        style="--flow-space: 0.9rem"
-        data-home-animate
-      >
-        <h2
-          class="home-section-title font-editorial text-[1.85rem] leading-none tracking-[-0.01em]"
+      <p class="home-supporting text-text-2" data-home-animate>
+        sometimes i <a href="/posts">write</a> about what i'm learning; other
+        times, i just write.
+      </p>
+
+      <nav class="home-links" aria-label="Links" data-home-animate>
+        <a
+          href="https://cal.com/chinmaynoob"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="home-link"
         >
-          Now
-        </h2>
-        <p class="home-section-body text-text-2 text-[1.0625rem]">
-          I'm looking for internships and full time roles. Previously, I held
-          various roles at <a
-            href="https://www.linkedin.com/in/chinmay-sawant0408/"
-            target="_blank"
-          >
-            startups</a
-          >. These days, my focus is on refining the fundamentals of my craft,
-          and figuring how to balance all the aspects of my life without
-          neglecting any of them.
-        </p>
-        <p class="home-section-body text-text-2 text-[1.0625rem]">
-          Sometimes I <a href="/posts" target="_self">write</a> about what I'm learning;
-          other times, I just write.
-        </p>
+          cal
+        </a>
+        <span class="home-link-sep" aria-hidden="true">·</span>
+        <a href="mailto:chinmaypvt04@gmail.com" class="home-link">mail</a>
+      </nav>
+    </section>
+
+    <div class="home-sections flow" style="--flow-space: 2.75rem">
+      <section class="home-section flow" style="--flow-space: 0.7rem" data-home-animate>
+        <div class="home-section-head">
+          <h2 class="home-section-title">recent work</h2>
+          <a href="/projects" class="home-more">view all &rarr;</a>
+        </div>
+        <ul class="home-recent-list" role="list">
+          {
+            recentProjects.map((project) => (
+              <li class="home-recent-item">
+                <a
+                  href={project.href}
+                  class="home-recent-link"
+                  target={project.external ? '_blank' : undefined}
+                  rel={project.external ? 'noopener noreferrer' : undefined}
+                >
+                  <span class="home-recent-label">{project.title}</span>
+                  <span class="home-recent-meta">{project.year}</span>
+                </a>
+              </li>
+            ))
+          }
+        </ul>
       </section>
 
-      <section
-        class="home-section flow"
-        style="--flow-space: 0.9rem"
-        data-home-animate
-      >
-        <h2
-          class="home-section-title font-editorial text-[1.85rem] leading-none tracking-[-0.01em]"
-        >
-          More
-        </h2>
-        <nav class="home-links flex flex-col">
-          <a
-            href="https://fern-ui.vercel.app/"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="home-link link flex items-center gap-3 text-[1.0625rem]"
-          >
-            <span class="home-link-icon flex-shrink-0" aria-hidden="true">
-              <ArrowRightUpIcon style={{ width: 20, height: 20 }} />
-            </span>
-            <span class="home-link-label">Visit Fern UI</span>
-          </a>
-          <a
-            href="https://cal.com/chinmaynoob"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="home-link link flex items-center gap-3 text-[1.0625rem]"
-          >
-            <span class="home-link-icon flex-shrink-0" aria-hidden="true">
-              <ArrowRightUpIcon style={{ width: 20, height: 20 }} />
-            </span>
-            <span class="home-link-label">Schedule a Call with Me</span>
-          </a>
-        </nav>
+      <section class="home-section flow" style="--flow-space: 0.7rem" data-home-animate>
+        <div class="home-section-head">
+          <h2 class="home-section-title">recent writing</h2>
+          <a href="/posts" class="home-more">read all &rarr;</a>
+        </div>
+        <ul class="home-recent-list" role="list">
+          {
+            recentPosts.map((post) => (
+              <li class="home-recent-item">
+                <a href={post.href} class="home-recent-link">
+                  <span class="home-recent-label">{post.title}</span>
+                  <span class="home-recent-meta">{post.dateLabel}</span>
+                </a>
+              </li>
+            ))
+          }
+        </ul>
       </section>
-    </section>
+
+      <section class="home-section flow" style="--flow-space: 0.7rem" data-home-animate>
+        <h2 class="home-section-title">currently listening to</h2>
+        <p class="home-nowplaying">
+          {nowPlaying.url ? (
+            <a
+              href={nowPlaying.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="home-nowplaying-title"
+            >
+              {nowPlaying.title}
+            </a>
+          ) : (
+            <span class="home-nowplaying-title">{nowPlaying.title}</span>
+          )}
+          <span class="home-nowplaying-artist"> — {nowPlaying.artist}</span>
+        </p>
+      </section>
+    </div>
   </article>
 </BaseLayout>
 
@@ -149,62 +194,143 @@ import { ArrowRightUpIcon } from '~/components/ui/icons';
 <style>
   .home-page {
     isolation: isolate;
+    text-transform: lowercase;
   }
 
-  .home-intro-copy,
-  .home-section-title {
-    text-wrap: balance;
-  }
-
-  .home-intro-copy {
-    max-width: 32ch;
-  }
-
-  .home-section {
-    max-width: 42rem;
-    padding-top: 0.25rem;
-  }
-
-  .home-section-body {
+  .home-supporting {
     max-width: 62ch;
+    font-size: 1.0625rem;
     line-height: 1.9;
-  }
-
-  .home-links {
-    gap: 0.8rem;
-  }
-
-  .home-link {
-    width: fit-content;
-    align-items: center;
-    line-height: 1.6;
-  }
-
-  .home-link-label {
     text-wrap: pretty;
   }
 
-  .home-link-icon {
-    transition: transform 150ms ease;
-    will-change: transform;
+  .home-links {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.4rem 0.85rem;
+  }
+
+  .home-link {
+    font-size: 1.0625rem;
+    line-height: 1.6;
+    color: var(--c-text-1);
+    text-decoration: underline;
+    text-decoration-color: var(--gray-6);
+    text-underline-offset: 3px;
+    transition: color var(--duration-fast, 150ms) ease,
+      text-decoration-color var(--duration-fast, 150ms) ease;
+  }
+
+  .home-link-sep {
+    color: var(--c-text-3);
+    user-select: none;
   }
 
   @media (hover: hover) and (pointer: fine) {
-    .home-link:hover .home-link-icon,
-    .home-link:focus-visible .home-link-icon {
-      transform: translate3d(2px, -2px, 0);
+    .home-link:hover {
+      color: var(--tomato-11);
+      text-decoration-color: var(--tomato-9);
     }
   }
 
-  @media (prefers-reduced-motion: reduce) {
-    .home-link-icon {
-      transition: none;
-      will-change: auto;
-    }
+  .home-sections {
+    margin-top: var(--space-l);
+  }
 
-    .home-link:hover .home-link-icon,
-    .home-link:focus-visible .home-link-icon {
-      transform: none;
+  .home-section-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .home-section-title {
+    margin: 0;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: var(--c-text-3);
+  }
+
+  .home-recent-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .home-recent-link {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.55rem 0;
+    color: var(--c-text-1);
+    text-decoration: none;
+    transition: color var(--duration-fast, 150ms) ease;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .home-recent-link:hover {
+      color: var(--tomato-11);
     }
+  }
+
+  .home-recent-label {
+    text-wrap: pretty;
+  }
+
+  .home-recent-meta {
+    flex: 0 0 auto;
+    font-size: 0.85rem;
+    color: var(--c-text-3);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .home-more {
+    display: inline-block;
+    font-size: 0.85rem;
+    color: var(--c-text-3);
+    text-decoration: underline;
+    text-decoration-color: var(--gray-7);
+    text-underline-offset: 3px;
+    transition: color var(--duration-fast, 150ms) ease,
+      text-decoration-color var(--duration-fast, 150ms) ease;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .home-more:hover {
+      color: var(--tomato-11);
+      text-decoration-color: var(--tomato-9);
+    }
+  }
+
+  .home-nowplaying {
+    margin: 0;
+    font-size: 1rem;
+    color: var(--c-text-2);
+    padding: 0.3rem 0;
+  }
+
+  .home-nowplaying-title {
+    color: var(--c-text-1);
+    text-decoration: underline;
+    text-decoration-color: var(--gray-7);
+    text-underline-offset: 3px;
+    transition: color var(--duration-fast, 150ms) ease,
+      text-decoration-color var(--duration-fast, 150ms) ease;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .home-nowplaying-title:hover {
+      color: var(--tomato-11);
+      text-decoration-color: var(--tomato-9);
+    }
+  }
+
+  .home-nowplaying-artist {
+    color: var(--c-text-3);
   }
 </style>

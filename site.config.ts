@@ -14,7 +14,7 @@ const config: SiteConfig = {
   bio: {
     name: 'chinmay sawant',
     avatar: '/chinmay.png',
-    description: 'CSE Graduate writing about distributed systems, algorithms,AI, and modern React development.',
+    description: 'software engineer writing about distributed systems, algorithms,AI, and modern React development.',
     links: [
       {
         label: 'mail',

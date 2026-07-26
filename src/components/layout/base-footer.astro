@@ -1,218 +1,123 @@
 ---
 import { cfg } from '~/cfg';
 
-const siteLinks = [
+const footerLinks = [
   { href: '/now', label: 'Now' },
-  { href: '/list-100', label: 'List 100' },
   { href: '/bookshelf', label: 'Bookshelf' },
+  { href: '/guestbook', label: 'Guestbook' },
+  { href: '/zibaldone', label: 'Zibaldone' },
+  { href: '/directory', label: 'Directory' },
   { href: '/colophon', label: 'Colophon' },
-];
-
-const socialLinks = [
-  { href: 'mailto:chinmaypvt04@gmail.com', label: 'Mail' },
-  { href: 'https://x.com/Chinmay0408', label: 'X (Twitter)' },
-  { href: 'https://github.com/chinmaynoob', label: 'GitHub' },
-  {
-    href: 'https://www.linkedin.com/in/chinmay-sawant0408/',
-    label: 'LinkedIn',
-  },
 ];
 
 const currentYear = new Date().getFullYear();
 ---
 
 <footer class="site-footer" transition:persist>
-  <div class="content">
-    <div class="links links-primary">
-      {siteLinks.map(({ href, label }) => <a href={href}>{label}</a>)}
-    </div>
-    <div class="links links-secondary">
+  <div class="footer-row">
+    <p class="footer-copy">
+      &copy; {currentYear} {cfg.bio.name}
+    </p>
+    <nav class="footer-links" aria-label="Footer">
       {
-        socialLinks.map(({ href, label }) => (
-          <a href={href} target="_blank" rel="me noopener noreferrer">
-            {label}
-          </a>
+        footerLinks.map(({ href, label }) => (
+          <a href={href}>{label}</a>
         ))
       }
       <a href="/rss.xml" target="_blank" rel="noopener noreferrer">RSS</a>
-    </div>
-    <div class="banner">
-      <span class="emoji">🌱</span>
-      <a
-        href="https://www.who.int/health-topics/mental-health"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        Take Care of Your Mind
-      </a>
-    </div>
-    <div class="branding">
-      <p class="eyebrow mb-1">Writing from the web</p>
-      <span class="name">{cfg.title}</span>
-      <p class="description">{cfg.bio.description}</p>
-    </div>
+    </nav>
   </div>
+  <p class="footer-note">
+    <a
+      href="https://www.who.int/health-topics/mental-health"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      Take care of your mind.
+    </a>
+  </p>
 </footer>
 
 <style>
   .site-footer {
-    margin-top: var(--spacing-page-y);
     position: relative;
     z-index: 2;
-    background-color: var(--c-bg);
-    width: 100vw;
-    max-width: none;
-    margin-left: calc(50% - 50vw);
-    margin-right: calc(50% - 50vw);
-    padding: min(5rem, var(--spacing-page-y)) var(--spacing-page-x)
-      var(--spacing-page-y);
-    border-top: 1px solid var(--c-border);
-    isolation: isolate;
-  }
-
-  .content {
     max-width: var(--spacing-page-w);
+    width: 100%;
     margin: 0 auto;
-    display: grid;
-    grid-template:
-      'links1 links2 branding' auto
-      'banner banner branding' auto / minmax(0, 0.8fr) minmax(0, 0.8fr) minmax(
-        18rem,
-        1.35fr
-      );
-    align-items: start;
-    gap: 1.25rem 1.5rem;
+    padding: 0 var(--spacing-page-x) var(--space-xl);
+    border-top: 1px solid var(--c-divider);
+    padding-top: var(--space-m);
   }
 
-  .links {
+  .footer-row {
     display: flex;
-    flex-direction: column;
-    gap: 0.45rem;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.5rem 1.25rem;
   }
 
-  .links-primary {
-    grid-area: links1;
+  .footer-copy {
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--c-text-3);
+    line-height: 1.5;
   }
 
-  .links-secondary {
-    grid-area: links2;
+  .footer-links {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.35rem 1rem;
   }
 
-  .links a {
-    font-family: var(--font-editorial);
-    font-size: 1.125rem;
-    line-height: 1.35;
-    color: var(--c-text-1);
+  .footer-links a {
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: var(--c-text-3);
     text-decoration: underline;
     text-decoration-color: transparent;
-    text-underline-offset: 4px;
-    transition: text-decoration-color 200ms ease;
+    text-underline-offset: 3px;
+    transition: color var(--duration-fast, 150ms) ease,
+      text-decoration-color var(--duration-fast, 150ms) ease;
   }
 
   @media (hover: hover) and (pointer: fine) {
-    .links a:hover {
+    .footer-links a:hover {
+      color: var(--c-text-1);
       text-decoration-color: currentColor;
     }
   }
 
-  .banner {
-    grid-area: banner;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.5rem;
-    padding-top: 0.25rem;
-    color: var(--c-text-2);
+  .footer-note {
+    margin: var(--space-s) 0 0;
+    font-size: 0.8rem;
+    color: var(--c-text-3);
+    line-height: 1.5;
   }
 
-  .banner .emoji {
-    line-height: 1;
-  }
-
-  .banner a {
-    text-decoration: none;
+  .footer-note a {
     color: inherit;
-    transition: color 200ms ease;
+    text-decoration: none;
+    transition: color var(--duration-fast, 150ms) ease;
   }
 
   @media (hover: hover) and (pointer: fine) {
-    .banner a:hover {
-      color: var(--c-text-1);
+    .footer-note a:hover {
+      color: var(--c-text-2);
     }
-  }
-
-  .branding {
-    grid-area: branding;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    justify-content: flex-start;
-    gap: 0.65rem;
-    max-width: 26rem;
-    justify-self: end;
-  }
-
-  .eyebrow {
-    font-size: 0.9rem;
-    line-height: 1.4;
-    color: var(--c-text-2);
-    letter-spacing: 0.02em;
-    text-transform: uppercase;
-  }
-
-  .name {
-    font-family: var(--font-editorial);
-    font-size: clamp(1.65rem, 2.8vw, 2.2rem);
-    line-height: 1;
-    letter-spacing: -0.02em;
-    color: var(--c-text-1);
-    text-wrap: balance;
-  }
-
-  .description,
-  .meta {
-    max-width: 28ch;
-    line-height: 1.75;
-    text-wrap: pretty;
-  }
-
-  .description {
-    color: var(--c-text-1);
-    font-size: 1rem;
-  }
-
-  .meta {
-    color: var(--c-text-2);
-    font-size: 0.95rem;
   }
 
   @media (max-width: 700px) {
-    .site-footer {
-      padding-top: 3rem;
+    .footer-row {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.65rem;
     }
 
-    .content {
-      grid-template:
-        'branding'
-        'links1'
-        'links2'
-        'banner' / 1fr;
-      gap: 1.5rem;
-    }
-
-    .branding {
-      justify-content: flex-start;
-      justify-self: start;
-      max-width: none;
-    }
-
-    .name {
-      font-size: 1.25rem;
-    }
-
-    .description,
-    .meta {
-      max-width: none;
+    .footer-links {
+      gap: 0.35rem 0.9rem;
     }
   }
 </style>
