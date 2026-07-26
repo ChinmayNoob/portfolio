@@ -1,1 +1,19 @@
 /* put your custom css here */
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  text-transform: lowercase;
+}
+
+.base-nav nav a,
+.mobile-nav nav a {
+  text-transform: lowercase;
+}
+
+.page-lede {
+  text-transform: lowercase;
+}

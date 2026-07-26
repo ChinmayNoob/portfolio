@@ -105,9 +105,15 @@ const error = Astro.url.searchParams.get("error");
 >
   <main>
     <section class="container">
-      <header class="hero">
-        <h1 class="hero-title">Guestbook</h1>
-        <p class="hero-description">Leave a message and get a travel stamp!</p>
+      <header class="hero flow" style="--flow-space: 0.6rem">
+        <h1
+          class="hero-title font-editorial text-[clamp(2rem,5vw,3.1rem)] leading-[1.05] tracking-[-0.02em]"
+        >
+          Guestbook
+        </h1>
+        <p class="hero-description text-text-2">
+          leave a message and get a travel stamp!
+        </p>
       </header>
 
       <div class="alert-container">
@@ -216,16 +222,20 @@ const error = Astro.url.searchParams.get("error");
   }
 
   .hero {
+    margin-top: 2.5rem;
     margin-bottom: 1.5rem;
   }
 
   .hero-title {
     margin: 0;
+    text-wrap: balance;
   }
 
   .hero-description {
-    margin: 0.25rem 0 0;
-    color: var(--gray-11);
+    margin: 0;
+    font-size: 1.0625rem;
+    line-height: 1.75;
+    text-wrap: pretty;
   }
 
   .guestbook-entries {
