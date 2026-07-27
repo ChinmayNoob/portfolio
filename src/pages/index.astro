@@ -49,12 +49,13 @@ import MusicPlayer from '~/components/home/bento-music-player.astro';
 import WakatimeGraph from '~/components/home/bento-wakatime-graph.astro';
 import { cfg } from '~/cfg';
 import { BENTO } from '~/data/bento';
-import { getPostsCollection } from '~/lib/mdx/post';
+import { getPostsCollection, postLeadImage } from '~/lib/mdx/post';
 
 const githubHref = cfg.bio.links.find((l) => l.label === 'github')?.url ?? '#';
 const xHref = cfg.bio.links.find((l) => l.label === 'x')?.url ?? '#';
 
 const latestPost = (await getPostsCollection()).at(0);
+const latestPostImage = latestPost ? postLeadImage(latestPost) : null;
 ---
 
 <BaseLayout wide seo={{ title: cfg.title, description: cfg.description }}>
@@ -128,8 +129,23 @@ const latestPost = (await getPostsCollection()).at(0);
         </bento-layer>
         {
           latestPost && (
-            <bento-layer data-content>
-              <a href={`/posts/${latestPost.slug}`} data-post-card>
+            <Fragment>
+              {latestPostImage && (
+                <bento-layer data-post-art>
+                  <img
+                    src={latestPostImage.src}
+                    alt=""
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </bento-layer>
+              )}
+              <bento-layer data-content>
+              <a
+                href={`/posts/${latestPost.slug}`}
+                data-post-card
+                data-has-art={latestPostImage ? '' : undefined}
+              >
                 <span data-post-kicker>Latest post</span>
                 <span data-post-title>{latestPost.data.title}</span>
                 <span data-post-description>{latestPost.data.description}</span>
@@ -142,7 +158,8 @@ const latestPost = (await getPostsCollection()).at(0);
               >
                 <ArrowUpRight aria-hidden="true" />
               </a>
-            </bento-layer>
+              </bento-layer>
+            </Fragment>
           )
         }
         <bento-layer data-desktop data-reveal>
@@ -409,6 +426,47 @@ const latestPost = (await getPostsCollection()).at(0);
     gap: var(--space-3xs);
     padding-inline-end: 4rem;
     color: var(--foreground);
+    /* styles/links.css underlines every classless <a>; not wanted here. */
+    text-decoration: none;
+  }
+
+  a[data-post-card]:hover span[data-post-title] {
+    text-decoration: underline;
+    text-decoration-color: currentColor;
+    text-underline-offset: 3px;
+  }
+
+  /*
+   * The post's lead image, treated like the other photography in the grid
+   * (the Discord avatar, the album art) so it sits in the same palette.
+   * A scrim keeps the title legible over whatever the image happens to be.
+   */
+  bento-layer[data-post-art] {
+    overflow: hidden;
+  }
+
+  bento-layer[data-post-art] :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: grayscale(1) sepia(0.3);
+    opacity: 0.55;
+  }
+
+  bento-layer[data-post-art]::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to top,
+      var(--background) 0%,
+      color-mix(in oklab, var(--background) 70%, transparent) 38%,
+      transparent 70%
+    );
+  }
+
+  a[data-post-card][data-has-art] span[data-post-description] {
+    display: none;
   }
 
   span[data-post-kicker] {

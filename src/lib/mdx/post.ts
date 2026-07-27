@@ -52,3 +52,30 @@ export const getTags = (postList: CollectionEntry<'posts'>[]) => {
     ),
   ];
 };
+
+/**
+ * The image to represent a post visually.
+ *
+ * Prefers an explicit `image` in frontmatter; otherwise falls back to the
+ * first image in the body, so existing posts get a lead image with no edits.
+ * Returns null for posts that have neither.
+ */
+export const postLeadImage = (post: CollectionEntry<'posts'>) => {
+  if (post.data.image) {
+    return { src: post.data.image, alt: post.data.imageAlt ?? '' };
+  }
+
+  const body = post.body ?? '';
+  // ![alt](/path "optional title")
+  const markdown = body.match(/!\[([^\]]*)\]\(\s*<?([^)\s>]+)>?[^)]*\)/);
+  if (markdown) return { src: markdown[2], alt: markdown[1] };
+
+  // <img src="/path" alt="..."> — MDX posts sometimes use raw tags
+  const html = body.match(/<img\b[^>]*\bsrc=["']([^"']+)["'][^>]*>/i);
+  if (html) {
+    const alt = html[0].match(/\balt=["']([^"']*)["']/i);
+    return { src: html[1], alt: alt?.[1] ?? '' };
+  }
+
+  return null;
+};
