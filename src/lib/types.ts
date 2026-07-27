@@ -13,6 +13,10 @@ export const postSchema = z.object({
   updatedDate: z.coerce.date().optional(),
   tags: z.array(z.string()).optional(),
   draft: z.boolean().optional(),
+  /** Lead image, e.g. '/assets/posts/cap/head.jpg'. Falls back to the first
+   *  image in the post body when omitted — see postLeadImage(). */
+  image: z.string().optional(),
+  imageAlt: z.string().optional(),
 });
 export type Post = z.infer<typeof postSchema>;
 

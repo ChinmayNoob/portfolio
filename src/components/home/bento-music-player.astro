@@ -1,0 +1,609 @@
+---
+import "~/styles/marquee.css"
+import { BENTO } from "~/data/bento"
+---
+
+<music-player data-tracks={JSON.stringify(BENTO.music.tracks)}>
+  <music-spinner role="status" aria-label="Loading"></music-spinner>
+</music-player>
+
+<style is:global>
+  music-player {
+    container-type: inline-size;
+    position: absolute;
+    inset: 0;
+    --music-pad: clamp(1rem, 6cqw, 3.5rem);
+    /* Play (2.5rem) + gap + next (1.875rem), with a little slack. */
+    --music-controls-width: 5rem;
+
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2xs);
+    padding: var(--music-pad);
+
+    music-art {
+      flex: 1;
+      min-height: 0;
+      margin-block-end: calc(var(--music-pad) - var(--space-2xs));
+      position: relative;
+      align-self: flex-start;
+      aspect-ratio: 1;
+      border: 2px solid var(--border);
+
+      &::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image: var(--music-art-image, none);
+        background-size: cover;
+        background-position: center;
+        filter: grayscale(1) sepia(0.3);
+        opacity: 0;
+        transition: opacity 0.4s ease;
+      }
+
+      &[data-loaded]::before {
+        opacity: 1;
+      }
+    }
+
+    music-meta {
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      min-width: 0;
+    }
+
+    music-status {
+      display: block;
+      margin-block-end: var(--space-3xs);
+      color: var(--primary);
+      font-size: clamp(0.75rem, 4cqw, 1.0625rem);
+    }
+
+    music-title {
+      display: flex;
+      margin-inline-end: max(var(--space-l), 30cqw);
+      color: var(--foreground);
+      font-size: clamp(1rem, 6.5cqw, 1.75rem);
+      font-weight: var(--font-weight-medium);
+      line-height: 1.3;
+      white-space: nowrap;
+
+      /*
+       * `:not([class])` matches the specificity of the global rule in
+       * styles/links.css, which would otherwise paint the title tomato red.
+       */
+      a:not([class]) {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      a:not([class]):hover {
+        color: inherit;
+        text-decoration: underline;
+        text-decoration-color: currentColor;
+        text-underline-offset: 3px;
+      }
+    }
+
+    music-line {
+      display: flex;
+      margin-inline-end: max(var(--space-l), 30cqw);
+      color: var(--muted-foreground);
+      font-size: clamp(0.75rem, 4cqw, 1.0625rem);
+      white-space: nowrap;
+
+      > span:not([data-marquee-window]) {
+        opacity: 0.6;
+      }
+    }
+
+    span[data-marquee-dim] {
+      opacity: 0.6;
+    }
+
+    music-progress {
+      display: block;
+      flex-shrink: 0;
+      margin-inline-end: max(
+        0px,
+        calc(var(--space-2xs) + var(--music-controls-width) - var(--music-pad))
+      );
+
+      music-track {
+        display: block;
+        height: 2px;
+        overflow: hidden;
+        background-color: var(--border);
+        cursor: pointer;
+      }
+
+      music-bar {
+        display: block;
+        height: 100%;
+        width: 0%;
+        background-color: var(--primary);
+      }
+
+      music-times {
+        display: flex;
+        justify-content: space-between;
+        margin-block-start: var(--space-3xs);
+        color: var(--muted-foreground);
+        font-size: clamp(0.75rem, 4cqw, 1.0625rem);
+        font-variant-numeric: oldstyle-nums tabular-nums;
+        line-height: 1;
+      }
+    }
+
+    music-empty {
+      display: flex;
+      flex: 1;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted-foreground);
+      font-size: var(--fs--1);
+      text-align: center;
+    }
+
+    music-spinner {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      &::after {
+        content: "";
+        inline-size: 1.5rem;
+        block-size: 1.5rem;
+        border: 2px solid var(--border);
+        border-block-start-color: var(--primary);
+        border-radius: var(--radius-full);
+        animation: music-spin 0.8s linear infinite;
+      }
+    }
+
+    music-controls {
+      position: absolute;
+      inset-block-end: 0;
+      inset-inline-end: 0;
+      display: flex;
+      align-items: center;
+      gap: var(--space-3xs);
+      margin: var(--space-2xs);
+    }
+
+    button[data-control] {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.75rem;
+      border: none;
+      border-radius: var(--radius-full);
+      background-color: color-mix(in oklab, var(--border) 50%, transparent);
+      color: var(--primary);
+      cursor: pointer;
+      transition: box-shadow 0.3s ease;
+
+      &:hover,
+      &:focus-visible {
+        box-shadow: 0 0 0 2px var(--ring);
+      }
+
+      svg {
+        width: 1rem;
+        height: 1rem;
+      }
+    }
+
+    button[data-control="next"] {
+      padding: 0.5rem;
+
+      svg {
+        width: 0.875rem;
+        height: 0.875rem;
+      }
+    }
+
+    > *:not(music-controls) {
+      animation: music-fade-in 0.4s ease;
+    }
+  }
+
+  @keyframes music-spin {
+    to {
+      rotate: 360deg;
+    }
+  }
+
+  @keyframes music-fade-in {
+    from {
+      opacity: 0;
+    }
+  }
+</style>
+
+<script>
+  import { applyMarquee, createMarqueeText } from "~/lib/marquee"
+  import {
+    readPersistentTileCache,
+    writePersistentTileCache,
+  } from "~/lib/tile-cache"
+
+  const SEARCH_URL = "https://itunes.apple.com/search"
+  const LOOKUP_URL = "https://itunes.apple.com/lookup"
+  const CACHE_KEY = "music:itunes:v2"
+  const CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000
+
+  interface CacheEntry {
+    at: number
+    /** The config the entry was built from; edits to it must invalidate. */
+    inputs: string
+    tracks: Track[]
+  }
+
+  const ICONS = {
+    play: "M8 5v14l11-7z",
+    pause: "M6 5h4v14H6zm8 0h4v14h-4z",
+    next: "M6 5l9 7-9 7zm10 0h3v14h-3z",
+  }
+
+  interface TrackInput {
+    term?: string
+    trackId?: number
+  }
+
+  interface Track {
+    title: string
+    artist: string
+    album: string
+    year: string
+    artwork: string
+    preview: string
+    url: string
+  }
+
+  interface ItunesResult {
+    trackId?: number
+    trackName?: string
+    artistName?: string
+    collectionName?: string
+    releaseDate?: string
+    artworkUrl100?: string
+    previewUrl?: string
+    trackViewUrl?: string
+  }
+
+  const formatSeconds = (seconds: number): string => {
+    const whole = Math.max(0, Math.floor(seconds))
+    return `${Math.floor(whole / 60)}:${(whole % 60).toString().padStart(2, "0")}`
+  }
+
+  const icon = (path: string): SVGSVGElement => {
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg")
+    svg.setAttribute("viewBox", "0 0 24 24")
+    svg.setAttribute("aria-hidden", "true")
+    const node = document.createElementNS("http://www.w3.org/2000/svg", "path")
+    node.setAttribute("fill", "currentColor")
+    node.setAttribute("d", path)
+    svg.appendChild(node)
+    return svg
+  }
+
+  const toTrack = (result: ItunesResult | undefined): Track | null => {
+    if (!result?.trackName || !result.previewUrl) return null
+    return {
+      title: result.trackName,
+      artist: result.artistName ?? "",
+      album: result.collectionName ?? "",
+      year: result.releaseDate?.slice(0, 4) ?? "",
+      // The API hands back a 100px thumbnail; the URL is resizable by name.
+      artwork: (result.artworkUrl100 ?? "").replace(
+        /\/\d+x\d+bb\.jpg$/,
+        "/600x600bb.jpg",
+      ),
+      preview: result.previewUrl,
+      url: result.trackViewUrl ?? "",
+    }
+  }
+
+  const getJson = async (url: string): Promise<ItunesResult[]> => {
+    try {
+      const response = await fetch(url)
+      if (!response.ok) return []
+      const body = (await response.json()) as { results?: ItunesResult[] }
+      return body.results ?? []
+    } catch {
+      return []
+    }
+  }
+
+  /**
+   * Resolves the configured list, preserving its order.
+   *
+   * All the `trackId` entries go out as ONE batched lookup — iTunes throttles
+   * bursts, and firing a request per track meant some silently came back
+   * empty. `term` entries still need a search each, so they run sequentially.
+   */
+  const resolveAll = async (inputs: TrackInput[]): Promise<Track[]> => {
+    const ids = inputs
+      .map((input) => input.trackId)
+      .filter((id): id is number => typeof id === "number")
+
+    const byId = new Map<number, ItunesResult>()
+    if (ids.length) {
+      const results = await getJson(`${LOOKUP_URL}?id=${ids.join(",")}`)
+      for (const result of results) {
+        if (typeof result.trackId === "number") byId.set(result.trackId, result)
+      }
+    }
+
+    const tracks: Track[] = []
+    for (const input of inputs) {
+      if (typeof input.trackId === "number") {
+        const track = toTrack(byId.get(input.trackId))
+        if (track) tracks.push(track)
+        continue
+      }
+      if (!input.term) continue
+      const results = await getJson(
+        `${SEARCH_URL}?term=${encodeURIComponent(input.term)}&entity=song&limit=1`,
+      )
+      const track = toTrack(results.find((r) => r.previewUrl))
+      if (track) tracks.push(track)
+    }
+    return tracks
+  }
+
+  class MusicPlayer extends HTMLElement {
+    tracks: Track[] = []
+    index = 0
+    audio: HTMLAudioElement | null = null
+    resizeObserver: ResizeObserver | null = null
+    marqueeFrameId = 0
+    bar: HTMLElement | null = null
+    elapsed: HTMLElement | null = null
+    total: HTMLElement | null = null
+    playButton: HTMLButtonElement | null = null
+
+    async connectedCallback() {
+      this.resizeObserver = new ResizeObserver(() => this.refreshMarquees())
+      this.resizeObserver.observe(this)
+
+      const configured = this.dataset.tracks ?? "[]"
+      let inputs: TrackInput[] = []
+      try {
+        inputs = JSON.parse(configured)
+      } catch {
+        inputs = []
+      }
+
+      /*
+       * Only trust the cache if it was built from the current track list —
+       * otherwise editing bento.ts would have no visible effect until the TTL
+       * lapsed a week later.
+       */
+      const cached = readPersistentTileCache<CacheEntry>(CACHE_KEY)
+      const usable = cached?.inputs === configured ? cached : null
+
+      if (usable?.tracks?.length) {
+        this.tracks = usable.tracks
+        this.render()
+        if (Date.now() - usable.at < CACHE_TTL_MS) return
+      }
+
+      const resolved = await resolveAll(inputs)
+
+      if (!resolved.length) {
+        if (!this.tracks.length) this.renderEmpty()
+        return
+      }
+
+      writePersistentTileCache(CACHE_KEY, {
+        at: Date.now(),
+        inputs: configured,
+        tracks: resolved,
+      } satisfies CacheEntry)
+      if (JSON.stringify(resolved) === JSON.stringify(this.tracks)) return
+
+      const wasPlaying = this.isPlaying
+      this.tracks = resolved
+      if (!wasPlaying) this.render()
+    }
+
+    disconnectedCallback() {
+      this.stop()
+      this.resizeObserver?.disconnect()
+      cancelAnimationFrame(this.marqueeFrameId)
+    }
+
+    get current(): Track | undefined {
+      return this.tracks[this.index]
+    }
+
+    get isPlaying(): boolean {
+      return Boolean(this.audio && !this.audio.paused)
+    }
+
+    refreshMarquees() {
+      cancelAnimationFrame(this.marqueeFrameId)
+      const lines = [
+        ...this.querySelectorAll<HTMLElement>("music-title, music-line"),
+      ]
+      this.marqueeFrameId = requestAnimationFrame(() => {
+        for (const line of lines) applyMarquee(line)
+        this.marqueeFrameId = 0
+      })
+    }
+
+    renderEmpty() {
+      const empty = document.createElement("music-empty")
+      empty.textContent = "No music data available"
+      this.replaceChildren(empty)
+    }
+
+    render() {
+      const track = this.current
+      if (!track) {
+        this.renderEmpty()
+        return
+      }
+
+      const art = document.createElement("music-art")
+      art.setAttribute("role", "img")
+      art.setAttribute("aria-label", `Album art for ${track.title}`)
+      if (track.artwork) {
+        const loader = new Image()
+        loader.src = track.artwork
+        loader
+          .decode()
+          .catch(() => {})
+          .then(() => {
+            art.style.setProperty("--music-art-image", `url(${track.artwork})`)
+            art.setAttribute("data-loaded", "")
+          })
+      }
+
+      const meta = document.createElement("music-meta")
+      const status = document.createElement("music-status")
+      status.textContent = "On repeat..."
+      meta.append(status)
+
+      const title = createMarqueeText("music-title", track.title)
+      if (track.url) {
+        const link = document.createElement("a")
+        link.href = track.url
+        link.target = "_blank"
+        link.rel = "noopener noreferrer"
+        link.title = `${track.title} on Apple Music`
+        link.append(...title.childNodes)
+        title.append(link)
+      }
+      const artist = createMarqueeText("music-line", track.artist, "by")
+      const album = createMarqueeText(
+        "music-line",
+        track.album,
+        "on",
+        track.year ? ` (${track.year})` : "",
+      )
+      meta.append(title, artist, album)
+
+      const progress = document.createElement("music-progress")
+      const rail = document.createElement("music-track")
+      this.bar = document.createElement("music-bar")
+      rail.appendChild(this.bar)
+      rail.addEventListener("click", (event) => this.seek(event, rail))
+      const times = document.createElement("music-times")
+      this.elapsed = document.createElement("span")
+      this.elapsed.textContent = "0:00"
+      this.total = document.createElement("span")
+      this.total.textContent = formatSeconds(this.audio?.duration || 30)
+      times.append(this.elapsed, this.total)
+      progress.append(rail, times)
+
+      const controls = document.createElement("music-controls")
+      this.playButton = document.createElement("button")
+      this.playButton.type = "button"
+      this.playButton.dataset.control = "play"
+      this.playButton.addEventListener("click", () => this.toggle())
+      this.syncPlayButton()
+
+      controls.append(this.playButton)
+      if (this.tracks.length > 1) {
+        const next = document.createElement("button")
+        next.type = "button"
+        next.dataset.control = "next"
+        next.title = "Next track"
+        next.setAttribute("aria-label", "Next track")
+        next.appendChild(icon(ICONS.next))
+        next.addEventListener("click", () => this.next())
+        controls.append(next)
+      }
+
+      this.replaceChildren(art, meta, progress, controls)
+      this.refreshMarquees()
+    }
+
+    syncPlayButton() {
+      const button = this.playButton
+      if (!button) return
+      const playing = this.isPlaying
+      const label = playing
+        ? "Pause preview"
+        : `Play a 30 second preview of ${this.current?.title ?? "this track"}`
+      button.title = label
+      button.setAttribute("aria-label", label)
+      button.replaceChildren(icon(playing ? ICONS.pause : ICONS.play))
+    }
+
+    seek(event: MouseEvent, rail: HTMLElement) {
+      const audio = this.audio
+      if (!audio || !Number.isFinite(audio.duration)) return
+      const bounds = rail.getBoundingClientRect()
+      const ratio = (event.clientX - bounds.left) / bounds.width
+      audio.currentTime = Math.min(Math.max(ratio, 0), 1) * audio.duration
+      this.tick()
+    }
+
+    toggle() {
+      if (this.isPlaying) {
+        this.audio?.pause()
+        return
+      }
+      this.play()
+    }
+
+    play() {
+      const track = this.current
+      if (!track) return
+
+      if (!this.audio) {
+        this.audio = new Audio()
+        this.audio.preload = "none"
+        this.audio.addEventListener("timeupdate", () => this.tick())
+        this.audio.addEventListener("loadedmetadata", () => this.tick())
+        this.audio.addEventListener("play", () => this.syncPlayButton())
+        this.audio.addEventListener("pause", () => this.syncPlayButton())
+        this.audio.addEventListener("ended", () => this.next())
+      }
+
+      if (this.audio.dataset.src !== track.preview) {
+        this.audio.src = track.preview
+        this.audio.dataset.src = track.preview
+      }
+
+      this.audio.play().catch(() => this.syncPlayButton())
+    }
+
+    next() {
+      if (!this.tracks.length) return
+      const wasPlaying = this.isPlaying
+      this.stop()
+      this.index = (this.index + 1) % this.tracks.length
+      this.render()
+      if (wasPlaying) this.play()
+    }
+
+    stop() {
+      if (!this.audio) return
+      this.audio.pause()
+      this.audio.currentTime = 0
+      delete this.audio.dataset.src
+    }
+
+    tick() {
+      const audio = this.audio
+      if (!audio || !this.bar || !this.elapsed || !this.total) return
+      const duration = Number.isFinite(audio.duration) ? audio.duration : 30
+      this.bar.style.width = `${Math.min((audio.currentTime / duration) * 100, 100)}%`
+      this.elapsed.textContent = formatSeconds(audio.currentTime)
+      this.total.textContent = formatSeconds(duration)
+    }
+  }
+
+  if (!customElements.get("music-player")) {
+    customElements.define("music-player", MusicPlayer)
+  }
+</script>

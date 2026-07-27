@@ -13,9 +13,10 @@ import type { SEO } from '~/lib/types';
 
 type Props = {
   seo?: SEO;
+  wide?: boolean;
 };
 
-const { seo, ...props } = Astro.props;
+const { seo, wide, ...props } = Astro.props;
 const currentPath = new URL(Astro.request.url).pathname;
 ---
 
@@ -33,7 +34,7 @@ const currentPath = new URL(Astro.request.url).pathname;
       <aside class="page-nav-rail">
         <BaseNav currentPath={currentPath} />
       </aside>
-      <main class="page-main" {...props}>
+      <main class="page-main" class:list={[{ 'page-main-wide': wide }]} {...props}>
         <slot />
       </main>
     </div>
