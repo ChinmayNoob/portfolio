@@ -1,0 +1,39 @@
+---
+import UnstyledBaseLayout from '~/components/layout/unstyled-base-layout.astro';
+import { LifelinePage } from '~/components/lifeline/lifeline-page';
+
+const title = 'Lifeline';
+const description =
+  'A timeline of my life so far — the milestones, year by year.';
+---
+
+<UnstyledBaseLayout seo={{ title, description }}>
+  <div class="lifeline-root">
+    <LifelinePage client:load />
+  </div>
+</UnstyledBaseLayout>
+
+<style is:global>
+  /*
+   * The lifeline shell renders its own <main> and <footer>, but the
+   * site's global.css caps those elements at the page content width and
+   * centers them. A full-viewport timeline has to undo that so the shell
+   * owns the whole screen.
+   */
+  .lifeline-root {
+    height: 100dvh;
+  }
+
+  .lifeline-root astro-island {
+    display: contents;
+  }
+
+  .lifeline-root main,
+  .lifeline-root footer {
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    min-height: 0;
+  }
+</style>
