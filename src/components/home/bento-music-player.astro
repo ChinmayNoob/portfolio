@@ -226,14 +226,20 @@ import { BENTO } from "~/data/bento"
 </style>
 
 <script>
+  import type { Track } from "~/lib/itunes"
   import { applyMarquee, createMarqueeText } from "~/lib/marquee"
   import {
     readPersistentTileCache,
     writePersistentTileCache,
   } from "~/lib/tile-cache"
 
-  const SEARCH_URL = "https://itunes.apple.com/search"
-  const LOOKUP_URL = "https://itunes.apple.com/lookup"
+  /*
+   * Resolved server-side by src/pages/api/music.ts. Calling itunes.apple.com
+   * from here worked locally but was blocked cross-origin in prod, and the
+   * localStorage cache below hid that — a cold origin went straight to the
+   * empty state.
+   */
+  const API_URL = "/api/music"
   const CACHE_KEY = "music:itunes:v2"
   const CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000
 
@@ -248,32 +254,6 @@ import { BENTO } from "~/data/bento"
     play: "M8 5v14l11-7z",
     pause: "M6 5h4v14H6zm8 0h4v14h-4z",
     next: "M6 5l9 7-9 7zm10 0h3v14h-3z",
-  }
-
-  interface TrackInput {
-    term?: string
-    trackId?: number
-  }
-
-  interface Track {
-    title: string
-    artist: string
-    album: string
-    year: string
-    artwork: string
-    preview: string
-    url: string
-  }
-
-  interface ItunesResult {
-    trackId?: number
-    trackName?: string
-    artistName?: string
-    collectionName?: string
-    releaseDate?: string
-    artworkUrl100?: string
-    previewUrl?: string
-    trackViewUrl?: string
   }
 
   const formatSeconds = (seconds: number): string => {
@@ -292,69 +272,23 @@ import { BENTO } from "~/data/bento"
     return svg
   }
 
-  const toTrack = (result: ItunesResult | undefined): Track | null => {
-    if (!result?.trackName || !result.previewUrl) return null
-    return {
-      title: result.trackName,
-      artist: result.artistName ?? "",
-      album: result.collectionName ?? "",
-      year: result.releaseDate?.slice(0, 4) ?? "",
-      // The API hands back a 100px thumbnail; the URL is resizable by name.
-      artwork: (result.artworkUrl100 ?? "").replace(
-        /\/\d+x\d+bb\.jpg$/,
-        "/600x600bb.jpg",
-      ),
-      preview: result.previewUrl,
-      url: result.trackViewUrl ?? "",
-    }
-  }
-
-  const getJson = async (url: string): Promise<ItunesResult[]> => {
+  /**
+   * One retry, because the endpoint answers 502 while iTunes is throttling and
+   * a single blip should not leave the tile empty until the next page view.
+   * Failures are logged rather than swallowed — the silent `catch` this
+   * replaced is what made the prod breakage so hard to see.
+   */
+  const fetchTracks = async (attempt = 0): Promise<Track[]> => {
     try {
-      const response = await fetch(url)
-      if (!response.ok) return []
-      const body = (await response.json()) as { results?: ItunesResult[] }
-      return body.results ?? []
-    } catch {
+      const response = await fetch(API_URL)
+      if (!response.ok) throw new Error(`${API_URL} responded ${response.status}`)
+      const body = (await response.json()) as { tracks?: Track[] }
+      return body.tracks ?? []
+    } catch (error) {
+      if (attempt === 0) return fetchTracks(1)
+      console.error("[music] could not load tracks", error)
       return []
     }
-  }
-
-  /**
-   * Resolves the configured list, preserving its order.
-   *
-   * All the `trackId` entries go out as ONE batched lookup — iTunes throttles
-   * bursts, and firing a request per track meant some silently came back
-   * empty. `term` entries still need a search each, so they run sequentially.
-   */
-  const resolveAll = async (inputs: TrackInput[]): Promise<Track[]> => {
-    const ids = inputs
-      .map((input) => input.trackId)
-      .filter((id): id is number => typeof id === "number")
-
-    const byId = new Map<number, ItunesResult>()
-    if (ids.length) {
-      const results = await getJson(`${LOOKUP_URL}?id=${ids.join(",")}`)
-      for (const result of results) {
-        if (typeof result.trackId === "number") byId.set(result.trackId, result)
-      }
-    }
-
-    const tracks: Track[] = []
-    for (const input of inputs) {
-      if (typeof input.trackId === "number") {
-        const track = toTrack(byId.get(input.trackId))
-        if (track) tracks.push(track)
-        continue
-      }
-      if (!input.term) continue
-      const results = await getJson(
-        `${SEARCH_URL}?term=${encodeURIComponent(input.term)}&entity=song&limit=1`,
-      )
-      const track = toTrack(results.find((r) => r.previewUrl))
-      if (track) tracks.push(track)
-    }
-    return tracks
   }
 
   class MusicPlayer extends HTMLElement {
@@ -372,13 +306,11 @@ import { BENTO } from "~/data/bento"
       this.resizeObserver = new ResizeObserver(() => this.refreshMarquees())
       this.resizeObserver.observe(this)
 
+      /*
+       * Only a fingerprint now that resolution happens server-side — the tile
+       * never reads the list itself, it just needs to notice when it changes.
+       */
       const configured = this.dataset.tracks ?? "[]"
-      let inputs: TrackInput[] = []
-      try {
-        inputs = JSON.parse(configured)
-      } catch {
-        inputs = []
-      }
 
       /*
        * Only trust the cache if it was built from the current track list —
@@ -394,7 +326,7 @@ import { BENTO } from "~/data/bento"
         if (Date.now() - usable.at < CACHE_TTL_MS) return
       }
 
-      const resolved = await resolveAll(inputs)
+      const resolved = await fetchTracks()
 
       if (!resolved.length) {
         if (!this.tracks.length) this.renderEmpty()
