@@ -5,6 +5,7 @@
 @import './utilities/flow.css';
 @import './links.css';
 @import './theme.css';
+@import './bento.css';
 
 @custom-variant dark (&:is(.dark *));
 
@@ -128,7 +129,7 @@
 @media (min-width: 1200px) {
   .page-nav-rail {
     position: absolute;
-    top: var(--spacing-page-y);
+    top: var(--spacing-page-top);
     left: var(--spacing-page-x);
     z-index: 2;
     width: auto;
@@ -159,7 +160,7 @@ button {
 
 html {
   scroll-behavior: smooth;
-  scroll-padding-top: var(--spacing-page-y);
+  scroll-padding-top: var(--spacing-page-top);
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -175,11 +176,27 @@ body {
 }
 
 main {
-  padding: var(--spacing-page-y) var(--spacing-page-x) 0;
+  padding: var(--spacing-page-top) var(--spacing-page-x) 0;
   max-width: var(--spacing-page-w);
   width: 100%;
-  min-height: calc(100vh - var(--spacing-page-y) * 2 - 20px);
+  min-height: calc(100vh - var(--spacing-page-top) - var(--spacing-page-y) - 20px);
   margin: 0 auto;
+}
+
+main.page-main-wide {
+  max-width: 74rem;
+}
+
+/*
+ * From 1200px up the nav rail is absolutely positioned over the page, so a wide
+ * <main> has to reserve a gutter for it — otherwise centred content (the home
+ * bento grid) slides underneath the links. Must come after the rule above:
+ * same specificity, so source order decides.
+ */
+@media (min-width: 1200px) {
+  main.page-main-wide {
+    max-width: min(74rem, calc(100% - 2 * (var(--spacing-page-x) + 8rem)));
+  }
 }
 
 footer {

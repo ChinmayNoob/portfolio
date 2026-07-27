@@ -1,0 +1,100 @@
+/* ================================================== */
+/* bento palette                                       */
+/* ================================================== */
+/*
+ * The bento SVG artwork references --background-l*, --foreground-l* and
+ * --accent-l* directly, so those names are fixed. Everything is scoped to
+ * <bento-container> so it cannot leak into the rest of the site's theme.
+ */
+
+bento-container {
+  --background-l0: #faf4ed;
+  --background-l1: #ede7df;
+  --background-l2: #e0dad2;
+  --background-l3: #d4cdc5;
+  --background-l4: #c7c0b8;
+  --background-l5: #bbb3ab;
+  --background-l6: #aea79e;
+  --background-l7: #a19a91;
+  --background-l8: #958d84;
+  --foreground-l0: #332b21;
+  --foreground-l1: #3d352b;
+  --foreground-l2: #483f35;
+  --foreground-l3: #524a40;
+  --foreground-l4: #5d554b;
+  --foreground-l5: #686056;
+  --foreground-l6: #736b62;
+  --foreground-l7: #7f776d;
+  --foreground-l8: #837a6d;
+  --accent-l0: #faf4ed;
+  --accent-l1: #ede7df;
+
+  --destructive: oklch(0.5504 0.1901 25);
+
+  /* light-dark() pairs from the source theme, resolved per class */
+  --bento-mark-color: var(--background-l7);
+  --wakatime-from: var(--background-l3);
+  --wakatime-to: var(--foreground-l6);
+  --wakatime-icon-color: var(--foreground-l6);
+  --discord-pattern-opacity: 0.5;
+
+  --background: var(--background-l0);
+  --foreground: var(--foreground-l0);
+  --prose-foreground: var(--foreground-l0);
+  --primary: var(--foreground-l1);
+  --primary-foreground: var(--background-l1);
+  --muted: var(--background-l1);
+  --muted-foreground: var(--foreground-l5);
+  --border: var(--background-l3);
+  --ring: var(--background-l6);
+
+  --radius-full: 9999px;
+  --step--1: var(--fs--1);
+}
+
+.dark bento-container {
+  --background-l0: #11100e;
+  --background-l1: #1d1b19;
+  --background-l2: #282622;
+  --background-l3: #34312c;
+  --background-l4: #403c36;
+  --background-l5: #4d4840;
+  --background-l6: #5a544b;
+  --background-l7: #665f55;
+  --background-l8: #726b5f;
+  --foreground-l0: #feead0;
+  --foreground-l1: #eedbc3;
+  --foreground-l2: #decdb6;
+  --foreground-l3: #cebfa9;
+  --foreground-l4: #beb19d;
+  --foreground-l5: #afa391;
+  --foreground-l6: #a09585;
+  --foreground-l7: #918879;
+  --foreground-l8: #8a8279;
+  --accent-l0: #feead0;
+  --accent-l1: #e9d3b6;
+
+  --destructive: oklch(0.704 0.191 22);
+
+  --bento-mark-color: var(--primary);
+  --wakatime-from: var(--foreground-l2);
+  --wakatime-to: var(--background-l5);
+  --wakatime-icon-color: var(--foreground);
+  --discord-pattern-opacity: 1;
+}
+
+/* ================================================== */
+/* themed svg / img swap                               */
+/* ================================================== */
+
+:root :is(svg, img)[data-theme-dark] {
+  display: none;
+}
+
+:root.dark :is(svg, img)[data-theme-light] {
+  display: none;
+}
+
+:root.dark :is(svg, img)[data-theme-dark] {
+  display: block;
+}

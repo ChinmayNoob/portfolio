@@ -29,12 +29,20 @@
   --spacing-page-w: 700px;
   --spacing-page-y: 128px;
   --spacing-page-x: max(24px, env(safe-area-inset-left));
+
+  /*
+   * The gap above page content. Split out from --spacing-page-y so the top of
+   * the page can be tightened without also shrinking the footer spacing and
+   * the heading rhythm in mdx.css, which share that variable.
+   */
+  --spacing-page-top: 56px;
 }
 
 @media (max-width: 700px) {
   :root {
     --spacing-page-y: 96px;
     --spacing-page-x: max(16px, env(safe-area-inset-left));
+    --spacing-page-top: 36px;
   }
 }
 
@@ -42,6 +50,7 @@
   --spacing-page-w: var(--spacing-page-w);
   --spacing-page-y: var(--spacing-page-y);
   --spacing-page-x: var(--spacing-page-x);
+  --spacing-page-top: var(--spacing-page-top);
 }
 
 /* ================================================== */

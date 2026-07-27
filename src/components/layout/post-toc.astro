@@ -76,7 +76,7 @@ const { toc } = Astro.props;
 
 <script>
   import { throttle } from 'es-toolkit';
-  import { getRootCssVar } from '~/lib/utils';
+  import { getRootCssVarPx } from '~/lib/utils';
 
   let scrollHandler: () => void;
 
@@ -92,7 +92,9 @@ const { toc } = Astro.props;
     scrollHandler = throttle(() => {
       const top = window.scrollY;
 
-      const scrollOffsetTop = Number(getRootCssVar('--spacing-page-y')) || 128;
+      // Match the offset the browser itself scrolls to for anchors, so the
+      // highlighted entry agrees with where the heading actually lands.
+      const scrollOffsetTop = getRootCssVarPx('--spacing-page-top', 56);
       const nextHeadIndex = headings.findIndex(
         (heading) => top < heading.offsetTop - scrollOffsetTop,
       );
