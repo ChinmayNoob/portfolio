@@ -16,9 +16,30 @@ const currentYear = new Date().getFullYear();
 
 <footer class="site-footer" transition:persist>
   <div class="footer-row">
+    <p class="footer-note">
+      <a
+        href="https://www.who.int/health-topics/mental-health"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        <img
+          class="footer-plant"
+          src="/plant.svg"
+          alt=""
+          aria-hidden="true"
+          width="24"
+          height="18"
+          loading="lazy"
+          decoding="async"
+        />
+        <span>Take care of your mind.</span>
+      </a>
+    </p>
+
     <p class="footer-copy">
       &copy; {currentYear} {cfg.bio.name}
     </p>
+
     <nav class="footer-links" aria-label="Footer">
       {
         footerLinks.map(({ href, label }) => (
@@ -28,22 +49,21 @@ const currentYear = new Date().getFullYear();
       <a href="/rss.xml" target="_blank" rel="noopener noreferrer">RSS</a>
     </nav>
   </div>
-  <p class="footer-note">
-    <a
-      href="https://www.who.int/health-topics/mental-health"
-      target="_blank"
-      rel="noopener noreferrer"
-    >
-      Take care of your mind.
-    </a>
-  </p>
 </footer>
 
 <style>
+  /*
+   * Wider than the content column above it. All eight links plus the note and
+   * the copyright need roughly 820px on one line, and --spacing-page-w is
+   * 700px, so keeping them in a single row means breaking alignment with the
+   * page content. That is a deliberate trade: the seam is the cost of the row.
+   */
   .site-footer {
+    --spacing-footer-w: 1000px;
+
     position: relative;
     z-index: 2;
-    max-width: var(--spacing-page-w);
+    max-width: var(--spacing-footer-w);
     width: 100%;
     margin: 0 auto;
     padding: 0 var(--spacing-page-x) var(--space-xl);
@@ -51,12 +71,45 @@ const currentYear = new Date().getFullYear();
     padding-top: var(--space-m);
   }
 
+  /*
+   * One row, in reading order: the note, the copyright, then the links. Still
+   * wraps — below about 900px of viewport there is genuinely not room, and
+   * wrapping is better than a horizontal scrollbar or clipped links.
+   */
   .footer-row {
     display: flex;
     flex-wrap: wrap;
-    align-items: baseline;
+    align-items: center;
     justify-content: space-between;
-    gap: 0.5rem 1.25rem;
+    gap: 0.65rem 1.5rem;
+  }
+
+  .footer-note {
+    margin: 0;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: var(--c-text-3);
+  }
+
+  .footer-note a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: inherit;
+    text-decoration: none;
+    transition: color var(--duration-fast, 150ms) ease;
+  }
+
+  /*
+   * A 4000x3000 illustration, so the intrinsic ratio has to be pinned or it
+   * lands as a 4000px-wide box for a frame. Height matches the cap height of
+   * the text beside it.
+   */
+  .footer-plant {
+    width: auto;
+    height: 1.15em;
+    flex-shrink: 0;
+    object-fit: contain;
   }
 
   .footer-copy {
@@ -89,22 +142,7 @@ const currentYear = new Date().getFullYear();
       color: var(--c-text-1);
       text-decoration-color: currentColor;
     }
-  }
 
-  .footer-note {
-    margin: var(--space-s) 0 0;
-    font-size: 0.8rem;
-    color: var(--c-text-3);
-    line-height: 1.5;
-  }
-
-  .footer-note a {
-    color: inherit;
-    text-decoration: none;
-    transition: color var(--duration-fast, 150ms) ease;
-  }
-
-  @media (hover: hover) and (pointer: fine) {
     .footer-note a:hover {
       color: var(--c-text-2);
     }
