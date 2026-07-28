@@ -59,78 +59,119 @@ const allTags = [...tagRegistry.values()].sort((a, b) => a.localeCompare(b));
         client:load
         tags={allTags}
         listSelector="#projects-list"
+        emptySelector="#projects-empty"
       />
 
       <ul class="projects-list" id="projects-list" role="list">
         {
-          projects.map(({ project, hasLinks }) => {
+          projects.map(({ project, hasLinks }, index) => {
             const canonicalTags = canonicalizeProjectTags(
               project.data.tags,
               tagRegistry,
             );
             const tagsAttr = canonicalTags.join('|');
+            /*
+             * A catalogue number, not a count of what is on screen — it stays
+             * put when the tag filter hides rows, so a project keeps the same
+             * number however you arrive at it.
+             */
+            const ordinal = String(index + 1).padStart(2, '0');
+            const stack = project.data.technologies
+              .split(',')
+              .map((item) => item.trim())
+              .filter(Boolean);
             return (
-              <li class="project-row" data-project-tags={tagsAttr}>
-                <div class="project-row-head">
-                  <h2
-                    class="project-row-title font-editorial text-xl leading-snug tracking-[-0.02em] text-text-1 md:text-2xl"
-                  >
-                    {project.data.title}
-                  </h2>
-                  <time
-                    class="project-row-year font-sans text-sm font-medium text-text-3 tabular-nums"
-                    datetime={String(project.data.year)}
-                  >
-                    {project.data.year}
-                  </time>
+              <li
+                class="project-row"
+                data-project-tags={tagsAttr}
+                data-first-visible={index === 0 ? '' : undefined}
+                data-last-visible={index === projects.length - 1 ? '' : undefined}
+              >
+                <span class="project-row-ordinal font-mono tabular-nums" aria-hidden="true">
+                  {ordinal}
+                </span>
+
+                <div class="project-row-body">
+                  <div class="project-row-head">
+                    <h2
+                      class="project-row-title font-editorial text-xl leading-snug tracking-[-0.02em] text-text-1 md:text-2xl"
+                    >
+                      {project.data.title}
+                    </h2>
+                    <time
+                      class="project-row-year font-sans text-sm font-medium text-text-3 tabular-nums"
+                      datetime={String(project.data.year)}
+                    >
+                      {project.data.year}
+                    </time>
+                  </div>
+
+                  <p class="project-row-desc text-text-2">
+                    {project.data.description}
+                  </p>
+
+                  {stack.length > 0 ? (
+                    <p class="project-row-stack font-mono">
+                      {stack.map((item, itemIndex) => (
+                        <>
+                          {itemIndex > 0 ? (
+                            <span class="project-stack-sep" aria-hidden="true">
+                              ·
+                            </span>
+                          ) : null}
+                          <span>{item}</span>
+                        </>
+                      ))}
+                    </p>
+                  ) : null}
+
+                  {hasLinks ? (
+                    <nav
+                      class="project-row-links"
+                      aria-label={`Links for ${project.data.title}`}
+                    >
+                      {project.data.liveUrl ? (
+                        <a
+                          href={project.data.liveUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          class="project-inline-link"
+                        >
+                          Live
+                        </a>
+                      ) : null}
+                      {project.data.githubUrl ? (
+                        <a
+                          href={project.data.githubUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          class="project-inline-link"
+                        >
+                          GitHub
+                        </a>
+                      ) : null}
+                      {project.data.demoVideoUrl ? (
+                        <a
+                          href={project.data.demoVideoUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          class="project-inline-link"
+                        >
+                          Demo
+                        </a>
+                      ) : null}
+                    </nav>
+                  ) : null}
                 </div>
-
-                <p class="project-row-desc text-text-2">
-                  {project.data.description}
-                </p>
-
-                {hasLinks ? (
-                  <nav
-                    class="project-row-links"
-                    aria-label={`Links for ${project.data.title}`}
-                  >
-                    {project.data.liveUrl ? (
-                      <a
-                        href={project.data.liveUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        class="project-inline-link"
-                      >
-                        Live
-                      </a>
-                    ) : null}
-                    {project.data.githubUrl ? (
-                      <a
-                        href={project.data.githubUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        class="project-inline-link"
-                      >
-                        GitHub
-                      </a>
-                    ) : null}
-                    {project.data.demoVideoUrl ? (
-                      <a
-                        href={project.data.demoVideoUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        class="project-inline-link"
-                      >
-                        Demo
-                      </a>
-                    ) : null}
-                  </nav>
-                ) : null}
               </li>
             );
           })
         }
       </ul>
+
+      <p class="projects-empty" id="projects-empty" role="status" hidden>
+        Nothing tagged with that yet.
+      </p>
     </section>
   </article>
 </BaseLayout>
@@ -181,18 +222,75 @@ const allTags = [...tagRegistry.values()].sort((a, b) => a.localeCompare(b));
     flex-direction: column;
   }
 
+  /*
+   * A numeral gutter plus the content column. The gutter is narrow enough to
+   * keep on small screens — collapsing it would cost the list its alignment,
+   * which is most of what makes it read as a catalogue.
+   */
   .project-row {
+    display: grid;
+    grid-template-columns: 2.25rem 1fr;
+    column-gap: 0.25rem;
     padding-block: var(--space-l);
     border-top: 1px solid var(--c-divider);
   }
 
-  .projects-list .project-row:first-child {
+  /*
+   * Keyed off attributes the tag filter maintains, not :first-child and
+   * :last-child. A hidden row still matches those, so filtering the first
+   * project out used to leave a stray divider under the filter bar. Astro
+   * stamps the initial pair server-side so this holds before JS runs.
+   */
+  .projects-list .project-row[data-first-visible] {
     border-top: none;
     padding-top: var(--space-s);
   }
 
-  .project-row:last-child {
+  .project-row[data-last-visible] {
     padding-bottom: 0;
+  }
+
+  .project-row-ordinal {
+    font-size: 0.75rem;
+    line-height: 1.9;
+    color: var(--c-text-3);
+    letter-spacing: 0.02em;
+    user-select: none;
+  }
+
+  .project-row-body {
+    min-width: 0;
+  }
+
+  /*
+   * The technologies each project already declares in its frontmatter. Set in
+   * the mono face — the site's third voice, otherwise unused — so it reads as
+   * metadata rather than as more prose.
+   */
+  .project-row-stack {
+    margin: 0.6rem 0 0;
+    max-width: 54ch;
+    font-size: 0.75rem;
+    line-height: 1.7;
+    color: var(--c-text-3);
+    text-wrap: pretty;
+  }
+
+  .project-stack-sep {
+    margin-inline: 0.4rem;
+    opacity: 0.55;
+  }
+
+  .projects-empty {
+    margin: var(--space-l) 0 0;
+    font-size: 0.95rem;
+    color: var(--c-text-3);
+  }
+
+  @media (max-width: 700px) {
+    .project-row {
+      grid-template-columns: 1.75rem 1fr;
+    }
   }
 
   .project-row-head {
@@ -227,6 +325,33 @@ const allTags = [...tagRegistry.values()].sort((a, b) => a.localeCompare(b));
     align-items: baseline;
     gap: 0.25rem 1.1rem;
     margin-top: 0.65rem;
+  }
+
+  /*
+   * Quiet at rest, present on approach. Gated behind a real hover pointer:
+   * on touch there is no hover to reveal them with, so they simply stay
+   * visible. Opacity only — never `display` or `visibility` — so the row
+   * never reflows and the links keep their place in the tab order.
+   *
+   * :focus-within is what makes this keyboard-operable: tabbing into a row
+   * reveals its links before they can be activated blind.
+   */
+  @media (hover: hover) and (pointer: fine) {
+    .project-row-links {
+      opacity: 0;
+      transition: opacity 220ms ease-out;
+    }
+
+    .project-row:hover .project-row-links,
+    .project-row:focus-within .project-row-links {
+      opacity: 1;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .project-row-links {
+      transition-duration: 0ms;
+    }
   }
 
   .project-inline-link {
