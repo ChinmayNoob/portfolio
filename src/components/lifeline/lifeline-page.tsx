@@ -1,6 +1,7 @@
 import { Lifeline, LifelineLegend } from "~/components/lifeline"
 import {
   LifelineFooter,
+  LifelineHint,
   LifelineNav,
   LifelineShell,
   LifelineStage,
@@ -43,8 +44,9 @@ export function LifelinePage() {
   return (
     <LifelineShell>
       <LifelineNav
+        currentPath="/lifeline"
         logo={
-          <span className="text-[15px] font-semibold tracking-tight">
+          <span className="text-[19px] font-semibold tracking-tight">
             chinmay
           </span>
         }
@@ -60,10 +62,16 @@ export function LifelinePage() {
       </LifelineStage>
 
       <LifelineFooter>
-        <p className="text-[13px] text-zinc-500">
+        {/* The description is the first thing to give up when the bar gets
+            tight — the legend decodes the dots and the hint teaches the
+            gesture, so both outrank it. */}
+        <p className="hidden min-w-0 truncate text-[13px] text-text-3 lg:block">
           {life.description}
         </p>
-        <LifelineLegend />
+        <div className="flex min-w-0 items-center gap-6">
+          <LifelineLegend />
+          <LifelineHint />
+        </div>
       </LifelineFooter>
     </LifelineShell>
   )

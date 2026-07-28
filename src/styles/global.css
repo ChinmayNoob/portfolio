@@ -607,7 +607,56 @@ footer {
     z-index: 20;
 }
 
+/*
+ * Follow the site's own sans rather than pinning a stack. `--font-sans` is
+ * declared twice — theme.css says Source Sans Pro, the shadcn @theme block
+ * further down this file says Geist Variable and wins on import order — so
+ * whichever ends up authoritative, the timeline now moves with it instead of
+ * disagreeing. Override `--lifeline-font` to typeset it in something else.
+ */
 .lifeline-typeset {
-    --lifeline-font: var(--font-geist-sans, "Geist"), "Geist Fallback", ui-sans-serif, system-ui, sans-serif;
+    --lifeline-font: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
     font-family: var(--lifeline-font);
+}
+
+/* Matches `.base-nav .base-nav-link-active` so the top header on /lifeline
+ * marks the current page exactly as the sidebar rail does elsewhere. */
+.lifeline-nav-link-active {
+    color: var(--tomato-9);
+    text-decoration-color: var(--tomato-9);
+}
+
+/*
+ * The two people markers. Radix scales are imported by variable.css and carry
+ * their own dark-mode values, so these need no `.dark` counterpart. They exist
+ * as classes because the Tailwind equivalents (`bg-blue-500`, `bg-pink-500`)
+ * are removed by theme.css and silently rendered the dots invisible.
+ */
+.lifeline-dot-mentor {
+    background-color: var(--blue-9);
+}
+
+.lifeline-dot-met {
+    background-color: var(--pink-9);
+}
+
+/* The scrub affordance: drifts to suggest the axis, then gets out of the way. */
+@keyframes lifeline-hint-drift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+    }
+  50% {
+    transform: translate3d(3px, 0, 0);
+    }
+}
+
+.lifeline-hint-arrow {
+    animation: lifeline-hint-drift 2.4s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lifeline-hint-arrow {
+    animation: none;
+    }
 }
