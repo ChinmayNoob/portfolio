@@ -12,7 +12,6 @@ const LEFT_EXIT_FADE_ZONE = 400
 const LEFT_EXIT_FADE_ZONE_COARSE = 160
 const WHEEL_SPEED = 1.4
 const WHEEL_VELOCITY_FRAME_MS = 16.67
-const WHEEL_MOMENTUM_BLEND = 0.65
 const DRAG_SPEED = 1
 const TOUCH_DRAG_SPEED = 1.15
 const TOUCH_GESTURE_LOCK_PX = 8
@@ -20,6 +19,20 @@ const NAV_HORIZONTAL_PADDING = 24
 const MOMENTUM_FRICTION = 0.94
 const MOMENTUM_MIN_VELOCITY = 0.025
 const MOMENTUM_MIN_START = 0.08
+
+/**
+ * How hard the rail chases the wheel's target, per 60Hz frame. The wheel used
+ * to be applied to the transform 1:1, which makes a trackpad's discrete deltas
+ * read as steps; easing toward a target turns the same stream into a glide.
+ * Normalized by frame time below so a 120Hz display travels the same distance
+ * in the same wall-clock time.
+ *
+ * A pointer drag deliberately does NOT go through this — direct manipulation
+ * must not lag the finger.
+ */
+const GLIDE_DAMPING = 0.18
+/** Close enough to the target to stop easing and snap. */
+const GLIDE_EPSILON = 0.1
 
 /** Where the track starts when there is no host nav to align with. */
 const LIFELINE_DEFAULT_START_INSET = 24
@@ -139,6 +152,15 @@ export function useLifelineScroll(
   const trackRef = useRef<HTMLDivElement>(null)
   const labelsRef = useRef<HTMLDivElement>(null)
   const markerRefs = useRef<(HTMLDivElement | null)[]>([])
+  /**
+   * Each marker's position within the track, and the stage's width, as of the
+   * last measure. Static between measures — which is what makes the per-frame
+   * `getBoundingClientRect()` calls this replaces avoidable. Reading layout
+   * inside a wheel handler that also writes transforms is read-after-write
+   * thrash, and trackpads fire faster than one event per frame.
+   */
+  const markerGeom = useRef<{ left: number; width: number }[]>([])
+  const stageWidth = useRef(0)
   const maxTranslate = useRef(0)
   const startInset = useRef(LIFELINE_DEFAULT_START_INSET)
   const endInset = useRef(0)
@@ -154,6 +176,12 @@ export function useLifelineScroll(
   const isCoarsePointerRef = useRef(options.isCoarsePointer ?? false)
   const momentumId = useRef(0)
   const settleId = useRef(0)
+  /** Where the wheel wants the rail; the glide loop closes the gap. */
+  const targetTranslate = useRef(0)
+  const glideId = useRef(0)
+  const commitId = useRef(0)
+  /** The translate the DOM currently reflects; `NaN` until the first commit. */
+  const committedPx = useRef(Number.NaN)
   const introLockedRef = useRef(options.introLocked ?? false)
   const introAnimatingRef = useRef(options.introAnimating ?? false)
   const introSkippedRef = useRef(options.introSkipped ?? false)
@@ -244,50 +272,57 @@ export function useLifelineScroll(
     )
   }, [])
 
+  /**
+   * Pure arithmetic over the cached geometry — no layout reads. A marker's
+   * stage-relative left is its position in the track plus the track's own
+   * offset, and the track's offset is exactly `startInset - translate`, which
+   * is what we just wrote.
+   */
   const updateFades = useCallback(() => {
     if (settlingRef.current) return
 
-    const section = sectionRef.current
-    if (!section) return
+    const geom = markerGeom.current
+    if (geom.length === 0) return
 
-    // All fade math is relative to the section's own box — the lifeline
-    // may be embedded anywhere, not pinned to the viewport.
-    const stageRect = section.getBoundingClientRect()
+    const width = stageWidth.current
+    const translate = translatePx.current
+    const trackOffset = startInset.current - translate
     const isCoarse = isCoarsePointerRef.current
     const fadeZone = isCoarse ? FADE_ZONE_COARSE : FADE_ZONE
     const leftFadeZone = isCoarse
       ? LEFT_EXIT_FADE_ZONE_COARSE
       : LEFT_EXIT_FADE_ZONE
+    const readableRight = width - 12
 
-    markerRefs.current.forEach((marker) => {
-      if (!marker) return
+    for (let index = 0; index < markerRefs.current.length; index += 1) {
+      const marker = markerRefs.current[index]
+      const box = geom[index]
+      if (!marker || !box) continue
 
-      const rect = marker.getBoundingClientRect()
-      const markerLeft = rect.left - stageRect.left
-      const center = markerLeft + rect.width / 2
+      const markerLeft = box.left + trackOffset
+      const center = markerLeft + box.width / 2
 
       let opacity = 1
 
       // Fade a marker out only as scrubbing carries it left of where
       // it rests at translate 0 — the first markers naturally live
       // inside the fade zone and must not open dimmed.
-      const naturalLeft = markerLeft + translatePx.current
+      const naturalLeft = markerLeft + translate
       const restLeft = Math.min(naturalLeft, leftFadeZone)
       if (markerLeft < restLeft) {
         opacity = markerLeft <= 0 ? 0 : markerLeft / restLeft
       }
 
-      if (center > stageRect.width - fadeZone) {
-        opacity = Math.min(opacity, (stageRect.width - center) / fadeZone)
+      if (center > width - fadeZone) {
+        opacity = Math.min(opacity, (width - center) / fadeZone)
       }
 
       if (isCoarse) {
-        const readableLeft = LIFELINE_STICKY_SHIELD_WIDTH
-        const readableRight = stageRect.width - 12
-        const markerRight = rect.right - stageRect.left
+        const markerRight = markerLeft + box.width
         const visibleWidth =
-          Math.min(markerRight, readableRight) - Math.max(markerLeft, readableLeft)
-        const visibility = rect.width > 0 ? visibleWidth / rect.width : 0
+          Math.min(markerRight, readableRight) -
+          Math.max(markerLeft, LIFELINE_STICKY_SHIELD_WIDTH)
+        const visibility = box.width > 0 ? visibleWidth / box.width : 0
 
         if (visibility >= 0.5) {
           opacity = 1
@@ -295,26 +330,62 @@ export function useLifelineScroll(
       }
 
       marker.style.opacity = String(clamp(opacity, 0, 1))
-    })
+    }
   }, [])
 
+  /**
+   * Every DOM write for a given translate, in one place. Called at most once
+   * per frame by `applyTranslate`; called directly by the intro and measure
+   * paths, which already run inside a frame.
+   */
+  const commitTranslate = useCallback(() => {
+    const next = translatePx.current
+    committedPx.current = next
+
+    if (trackRef.current) {
+      trackRef.current.style.transform = `translate3d(${startInset.current - next}px, 0, 0)`
+    }
+
+    applyLabelSticky(next)
+    updateFades()
+  }, [applyLabelSticky, updateFades])
+
+  /**
+   * Records the new translate and coalesces the write into the next frame.
+   * Several wheel events inside one frame therefore cost one write instead of
+   * one write each — and, with the geometry cached, none of them read layout.
+   */
   const applyTranslate = useCallback(
     (value: number) => {
-      const max = maxTranslate.current
-      const next = clamp(value, 0, max)
+      const next = clamp(value, 0, maxTranslate.current)
       translatePx.current = next
 
-      if (trackRef.current) {
-        trackRef.current.style.transform = `translate3d(${startInset.current - next}px, 0, 0)`
-      }
+      // Already pending: that commit will pick up the value just written.
+      if (commitId.current !== 0) return
+      // Already on screen: nothing to write. Checked against what was last
+      // committed rather than against the incoming value, because a caller
+      // that re-sends the current position still needs a commit if the last
+      // one was pre-empted.
+      if (next === committedPx.current) return
 
-      applyLabelSticky(next)
-      updateFades()
+      commitId.current = requestAnimationFrame(() => {
+        commitId.current = 0
+        commitTranslate()
+      })
     },
-    [applyLabelSticky, updateFades],
+    [commitTranslate],
   )
 
-  applyTranslateRef.current = applyTranslate
+  /** Bypasses the frame batch — for callers already inside one. */
+  const applyTranslateNow = useCallback(
+    (value: number) => {
+      translatePx.current = clamp(value, 0, maxTranslate.current)
+      commitTranslate()
+    },
+    [commitTranslate],
+  )
+
+  applyTranslateRef.current = applyTranslateNow
 
   /**
    * Page mode or embedded? An explicit `mode` decides it outright.
@@ -409,6 +480,26 @@ export function useLifelineScroll(
       endInset.current = stageRect.width - NAV_HORIZONTAL_PADDING
     }
 
+    stageWidth.current = stageRect.width
+
+    /*
+     * Cache every marker's slot in the track while we are already doing layout
+     * work. `offsetLeft` is relative to the positioned ancestor inside the
+     * track, so it needs the same shield offset the max-translate math uses
+     * below — the two must agree or the fades drift from the transform.
+     */
+    const geom: { left: number; width: number }[] = []
+    for (let index = 0; index < markerCount; index += 1) {
+      const marker = markerRefs.current[index]
+      if (!marker) continue
+
+      geom[index] = {
+        left: LIFELINE_STICKY_SHIELD_WIDTH + marker.offsetLeft,
+        width: marker.offsetWidth,
+      }
+    }
+    markerGeom.current = geom
+
     const lastMarker = markerRefs.current[markerCount - 1]
     const lastMarkerRight = lastMarker
       ? LIFELINE_STICKY_SHIELD_WIDTH +
@@ -421,6 +512,7 @@ export function useLifelineScroll(
       startInset.current + lastMarkerRight - endInset.current,
     )
     maxTranslate.current = max
+    targetTranslate.current = clamp(targetTranslate.current, 0, max)
 
     return max
   }, [markerCount, resolveMode])
@@ -443,7 +535,10 @@ export function useLifelineScroll(
       initialized.current = true
     }
 
-    applyTranslate(translatePx.current)
+    // Unbatched: this runs before first paint, so the rail must already be
+    // where it belongs rather than waiting a frame to get there.
+    applyTranslateNow(translatePx.current)
+    targetTranslate.current = translatePx.current
     setIsLayoutReady(true)
     // Sync initial position once before first paint; resize uses measure().
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -515,6 +610,7 @@ export function useLifelineScroll(
         onIntroScrollStartRef.current?.()
         sectionRef.current?.style.setProperty("--lifeline-intro-progress", "0")
         applyTranslateRef.current(0)
+        targetTranslate.current = 0
       }
 
       const elapsed = now - introScrollStart.current
@@ -527,6 +623,11 @@ export function useLifelineScroll(
         String(progress),
       )
       applyTranslateRef.current(progress * max)
+      // The sweep owns the position outright, so the glide target has to
+      // follow it. Leave it at 0 and the first wheel after the intro would
+      // ease all the way back to the start instead of nudging from the
+      // present.
+      targetTranslate.current = translatePx.current
 
       if (progress < 1) {
         introScrollId.current = requestAnimationFrame(step)
@@ -535,6 +636,7 @@ export function useLifelineScroll(
 
       sectionRef.current?.style.setProperty("--lifeline-intro-progress", "1")
       applyTranslateRef.current(max)
+      targetTranslate.current = translatePx.current
       introScrollId.current = 0
     }
 
@@ -577,6 +679,8 @@ export function useLifelineScroll(
   useEffect(() => {
     return () => {
       initialized.current = false
+      // A remount paints a fresh track, so nothing is committed to it yet.
+      committedPx.current = Number.NaN
     }
   }, [])
 
@@ -597,6 +701,66 @@ export function useLifelineScroll(
     const stopMomentum = () => {
       cancelAnimationFrame(momentumId.current)
       momentumId.current = 0
+    }
+
+    const stopGlide = () => {
+      cancelAnimationFrame(glideId.current)
+      glideId.current = 0
+    }
+
+    /** Keeps the glide target pinned to a directly-manipulated position. */
+    const syncTarget = () => {
+      targetTranslate.current = translatePx.current
+    }
+
+    /**
+     * Closes the gap between where the rail is and where the wheel asked it to
+     * be, easing rather than jumping. Damping is normalized to a 60Hz frame so
+     * the travel takes the same wall-clock time on a 120Hz display.
+     *
+     * Only the wheel and the keyboard drive this. A pointer drag sets position
+     * directly and a released drag throws via `startMomentum` — running either
+     * through here would put lag between the finger and the rail.
+     */
+    const startGlide = () => {
+      if (glideId.current !== 0) return
+
+      let lastFrameTime = performance.now()
+
+      const step = (now: number) => {
+        const dt = Math.min(now - lastFrameTime, 32)
+        lastFrameTime = now
+
+        const target = clamp(targetTranslate.current, 0, maxTranslate.current)
+        targetTranslate.current = target
+        const current = translatePx.current
+        const gap = target - current
+
+        if (Math.abs(gap) <= GLIDE_EPSILON) {
+          glideId.current = 0
+          if (current !== target) applyTranslateNow(target)
+          return
+        }
+
+        // 1 - (1 - k)^(dt/frame): the same easing whatever the frame rate.
+        const factor = 1 - Math.pow(1 - GLIDE_DAMPING, dt / WHEEL_VELOCITY_FRAME_MS)
+        applyTranslateNow(current + gap * factor)
+
+        // Easing into an end counts as reaching it, so an embedded rail starts
+        // its release hold from the moment of contact.
+        if (
+          isEmbedRef.current &&
+          boundaryHitAt.current === 0 &&
+          (target <= 0 || target >= maxTranslate.current) &&
+          Math.abs(target - translatePx.current) <= GLIDE_EPSILON
+        ) {
+          boundaryHitAt.current = performance.now()
+        }
+
+        glideId.current = requestAnimationFrame(step)
+      }
+
+      glideId.current = requestAnimationFrame(step)
     }
 
     const startMomentum = () => {
@@ -620,7 +784,8 @@ export function useLifelineScroll(
         const next = clamp(translatePx.current + velocity * dt, 0, max)
 
         if (next !== translatePx.current) {
-          applyTranslate(next)
+          applyTranslateNow(next)
+          syncTarget()
         }
 
         if (next <= 0 || next >= max) {
@@ -652,7 +817,10 @@ export function useLifelineScroll(
 
       // During intro scroll, the rAF loop owns translate — only refresh bounds.
       if (!(introAnimatingRef.current && introStartedRef.current)) {
-        applyTranslate(translatePx.current)
+        applyTranslateNow(translatePx.current)
+        // A resize that shortens the rail must not leave the glide chasing a
+        // target past the new end.
+        if (glideId.current === 0) syncTarget()
       }
 
       setIsLayoutReady(true)
@@ -676,22 +844,30 @@ export function useLifelineScroll(
 
     window.addEventListener("resize", scheduleMeasure)
 
-    const scrub = (movement: number, target: number) => {
-      applyTranslate(target)
+    /**
+     * The wheel moves the *target*; the glide loop moves the rail. A trackpad
+     * emits several deltas per frame, and applying each to the transform
+     * directly is what made the scrub read as steps.
+     *
+     * The wheel does not feed `startMomentum` any more: a wheel stream already
+     * carries the OS's own inertia, so layering a second coast on top of the
+     * glide meant two easing systems fighting over the same value. Momentum is
+     * now purely what a released finger throws.
+     */
+    const scrub = (target: number) => {
+      stopMomentum()
+      dragVelocity.current = 0
+      targetTranslate.current = clamp(target, 0, maxTranslate.current)
 
-      const impulse = (movement / WHEEL_VELOCITY_FRAME_MS) * 0.35
-      dragVelocity.current =
-        dragVelocity.current * (1 - WHEEL_MOMENTUM_BLEND) +
-        impulse * WHEEL_MOMENTUM_BLEND
-
-      // Embedded under reduced motion, skip the coast: inertia is what the
-      // preference asks you to drop, and it is also the one thing that
-      // makes the release decision non-deterministic.
-      if (isEmbedRef.current && prefersReducedMotionRef.current) return
-
-      if (momentumId.current === 0) {
-        startMomentum()
+      // Reduced motion asks for no inertia, and the glide is inertia: land on
+      // the target this frame instead of easing toward it.
+      if (prefersReducedMotionRef.current) {
+        stopGlide()
+        applyTranslate(targetTranslate.current)
+        return
       }
+
+      startGlide()
     }
 
     const release = () => {
@@ -751,7 +927,10 @@ export function useLifelineScroll(
       if (!resolveMode()) {
         // Page mode: the lifeline is the page and every wheel is ours.
         event.preventDefault()
-        scrub(movement, translatePx.current + movement)
+        // Accumulate onto the target, not the current position — otherwise
+        // each event in a stream discards the travel the glide has not
+        // performed yet, and a fast flick loses most of its distance.
+        scrub(targetTranslate.current + movement)
         return
       }
 
@@ -763,12 +942,16 @@ export function useLifelineScroll(
       }
 
       const target = clamp(
-        translatePx.current + movement,
+        targetTranslate.current + movement,
         0,
         maxTranslate.current,
       )
 
-      if (target === translatePx.current && !horizontalIntent) {
+      // Compared against the target, not the live position: mid-glide the rail
+      // is still short of an end it has already been asked to reach, and
+      // comparing positions would read that as "still travelling" and keep
+      // swallowing the wheel.
+      if (target === targetTranslate.current && !horizontalIntent) {
         // At an end of the rail, still being pushed further out. Hold the
         // wheel until the stream goes quiet, then hand it to the page.
         const now = performance.now()
@@ -791,7 +974,7 @@ export function useLifelineScroll(
       // Moving again — a reversal re-arms the hold at the other end.
       boundaryHitAt.current = 0
       event.preventDefault()
-      scrub(movement, target)
+      scrub(target)
     }
 
     // The rail moves by transform; any native scroll on the section is the
@@ -804,6 +987,10 @@ export function useLifelineScroll(
 
     const beginDrag = (event: PointerEvent) => {
       stopMomentum()
+      // A finger on the rail takes it over outright — no easing between the
+      // two, or the grab starts by fighting a glide already in flight.
+      stopGlide()
+      syncTarget()
       dragVelocity.current = 0
       dragging.current = true
       activePointerId.current = event.pointerId
@@ -887,8 +1074,12 @@ export function useLifelineScroll(
 
       lastPointerSample.current = { x: event.clientX, t: now }
 
+      // 1:1 with the pointer, batched to one write per frame. Batching does
+      // not soften the mapping — the rail still lands exactly where the finger
+      // puts it, just once per frame rather than once per event.
       const deltaX = event.clientX - dragOrigin.current.x
       applyTranslate(dragOrigin.current.translate - deltaX * dragSpeed)
+      syncTarget()
     }
 
     const endDrag = (event: PointerEvent) => {
@@ -933,14 +1124,18 @@ export function useLifelineScroll(
       stopMomentum()
       dragVelocity.current = 0
 
+      // Through the glide, so a held arrow key reads as travel rather than a
+      // sequence of jumps.
+      const step = maxTranslate.current * 0.05
+
       if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
         event.preventDefault()
-        applyTranslate(translatePx.current - maxTranslate.current * 0.05)
+        scrub(targetTranslate.current - step)
       }
 
       if (event.key === "ArrowRight" || event.key === "ArrowDown") {
         event.preventDefault()
-        applyTranslate(translatePx.current + maxTranslate.current * 0.05)
+        scrub(targetTranslate.current + step)
       }
     }
 
@@ -959,6 +1154,9 @@ export function useLifelineScroll(
     return () => {
       cancelAnimationFrame(frameId)
       stopMomentum()
+      stopGlide()
+      cancelAnimationFrame(commitId.current)
+      commitId.current = 0
       cancelAnimationFrame(settleId.current)
       settlingRef.current = false
       resizeObserver?.disconnect()
@@ -983,7 +1181,14 @@ export function useLifelineScroll(
       section.style.cursor = ""
       section.style.touchAction = ""
     }
-  }, [applyTranslate, isScrollLocked, markerCount, measureLayout, resolveMode])
+  }, [
+    applyTranslate,
+    applyTranslateNow,
+    isScrollLocked,
+    markerCount,
+    measureLayout,
+    resolveMode,
+  ])
 
   return {
     sectionRef,

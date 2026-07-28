@@ -9,8 +9,8 @@ import {
   useState,
   type ReactNode,
 } from "react"
-import { useTheme } from "next-themes"
 import type { LifelineEventEffect } from "./types"
+import { useSiteTheme } from "./use-site-theme"
 
 /** Tweak these */
 const DURATION_S = 7.5
@@ -246,8 +246,14 @@ export function LifelineFireworksProvider({
 }) {
   const [playing, setPlaying] = useState(false)
   const [effect, setEffect] = useState<LifelineEventEffect>("fireworks")
-  const { resolvedTheme, setTheme } = useTheme()
-  const restoreThemeRef = useRef<string | null>(null)
+  /*
+   * The site's own theme, not `next-themes`. Nothing in the app mounts a
+   * `ThemeProvider`, so `useTheme()` handed back an undefined theme and a
+   * no-op setter — the nightfall below could never fire and the burst always
+   * played over whatever was already on screen.
+   */
+  const { theme, setTheme } = useSiteTheme()
+  const restoreThemeRef = useRef<"light" | "dark" | null>(null)
   const nightfallRef = useRef(0)
   const playingRef = useRef(false)
   playingRef.current = playing
@@ -264,7 +270,7 @@ export function LifelineFireworksProvider({
 
     // Fireworks belong in the dark: switch a light page to dark for
     // the show, and restore afterwards.
-    if (resolvedTheme === "light") {
+    if (theme === "light") {
       restoreThemeRef.current = "light"
       setTheme("dark")
       window.clearTimeout(nightfallRef.current)
@@ -277,7 +283,7 @@ export function LifelineFireworksProvider({
 
     restoreThemeRef.current = null
     setPlaying(true)
-  }, [resolvedTheme, setTheme])
+  }, [theme, setTheme])
 
   const done = useCallback(() => {
     setPlaying(false)

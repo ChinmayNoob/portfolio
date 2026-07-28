@@ -1,8 +1,13 @@
 import type { LifelineLegendItem } from "./types"
 
+/*
+ * These are CSS classes rather than Tailwind colour utilities because
+ * theme.css removes the stock palettes — `bg-blue-500` and `bg-pink-500`
+ * generate nothing, which left both dots invisible.
+ */
 const LEGEND_DOT_CLASS: Record<LifelineLegendItem["type"], string> = {
-  mentor: "bg-blue-500",
-  met: "bg-pink-500",
+  mentor: "lifeline-dot-mentor",
+  met: "lifeline-dot-met",
 }
 
 const DEFAULT_ITEMS: LifelineLegendItem[] = [
@@ -16,7 +21,7 @@ export function LifelineLegend({
   items?: LifelineLegendItem[]
 }) {
   return (
-    <ul className="flex flex-wrap items-center gap-x-6 gap-y-2 text-[13px] text-zinc-500">
+    <ul className="flex flex-wrap items-center gap-x-6 gap-y-2 text-[13px] text-text-3">
       {items.map((item) => (
         <li key={item.type} className="flex items-center gap-2">
           <span
