@@ -6,6 +6,10 @@ export const isDraft = (post: CollectionEntry<'posts'>) => {
   return isProd && post.data.draft;
 };
 
+export const isArchived = (post: CollectionEntry<'posts'>) => {
+  return Boolean(post.data.archived);
+};
+
 export const sortCollectionDateDesc = (
   a: CollectionEntry<'posts'>,
   b: CollectionEntry<'posts'>,
@@ -16,6 +20,7 @@ export const sortCollectionDateDesc = (
 export const getPostsCollection = async () => {
   return (await getCollection('posts'))
     .filter((post) => !isDraft(post))
+    .filter((post) => !isArchived(post))
     .sort(sortCollectionDateDesc);
 };
 
