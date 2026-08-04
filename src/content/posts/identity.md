@@ -4,6 +4,7 @@ description: 'some late night thoughts'
 date: 2026-04-04 16:19:26
 updatedDate: 2026-04-04 16:19:26
 draft: false
+archived: true
 tags:
   - life
 ---
