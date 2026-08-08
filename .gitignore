@@ -24,3 +24,6 @@ pnpm-debug.log*
 
 # vercel cli local project link (deploys use git integration)
 .vercel/
+
+# local hud/tool state
+.omc/
