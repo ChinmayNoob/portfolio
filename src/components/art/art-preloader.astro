@@ -1,0 +1,326 @@
+---
+/*
+ * Full-screen intro for /art: a stack of art images wipes in one after another
+ * while a 000 → 100% counter rolls in the corner, then everything clips away.
+ * Ported from the zoro-studios preloader (GSAP + Anton SC).
+ */
+import "@fontsource/anton-sc/400.css";
+import { getImage } from "astro:assets";
+import { artIntroBg, artPieces } from "~/lib/art-data";
+
+/** How many frames the wipe sequence plays. Art pieces repeat if there are fewer. */
+const SLOT_COUNT = 4;
+
+const sources = artPieces.length ? artPieces : [];
+const slots = Array.from(
+  { length: SLOT_COUNT },
+  (_, i) => sources[i % sources.length],
+).filter(Boolean);
+
+const images = await Promise.all(
+  slots.map((piece) =>
+    getImage({ src: piece.image, widths: [640, 1080], format: "webp" }),
+  ),
+);
+
+/*
+ * Digit reels. Every cell is rendered here rather than built in JS — Astro's
+ * scoped styles key off a data attribute the template adds, so script-created
+ * cells would come out unstyled (and the wrong height).
+ */
+const ONES = [
+  ...Array.from({ length: 2 }, () => [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]).flat(),
+  0,
+];
+const TENS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0];
+const HUNDREDS = [0, 1];
+---
+
+{/*
+  Decide before first paint whether the intro plays. Doing this in the bundled
+  module would let the page flash behind the overlay for a frame (or leave it
+  covered when the intro is skipped).
+*/}
+<script is:inline>
+  (() => {
+    const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    document.documentElement.classList.toggle("art-intro", !reduce);
+  })();
+</script>
+
+<div
+  class="art-preloader"
+  data-art-preloader
+  style={`--art-intro-bg:${artIntroBg};`}
+>
+  <div class="art-preloader__stage">
+    <div class="art-preloader__frame">
+      {
+        images.map((img, i) => (
+          <img
+            class="art-preloader__img"
+            src={img.src}
+            srcset={img.srcSet.attribute}
+            sizes="(max-width: 700px) 80vw, 25rem"
+            alt=""
+            aria-hidden="true"
+            decoding="async"
+            fetchpriority={i === 0 ? "high" : "auto"}
+          />
+        ))
+      }
+    </div>
+
+    <div class="art-preloader__counter" aria-hidden="true">
+      <div class="art-preloader__reel">
+        <div class="art-preloader__digits" data-digit="1">
+          {HUNDREDS.map((d) => <div class="art-preloader__num">{d}</div>)}
+        </div>
+      </div>
+      <div class="art-preloader__reel">
+        <div class="art-preloader__digits" data-digit="2">
+          {TENS.map((d) => <div class="art-preloader__num">{d}</div>)}
+        </div>
+      </div>
+      <div class="art-preloader__reel">
+        <div class="art-preloader__digits" data-digit="3">
+          {ONES.map((d) => <div class="art-preloader__num">{d}</div>)}
+        </div>
+      </div>
+      <div class="art-preloader__percent">%</div>
+    </div>
+  </div>
+</div>
+
+<style>
+  /*
+   * The overlay ships in the HTML but only shows when the inline script has
+   * decided the intro should play — otherwise the page would flash black
+   * before the module script gets a chance to remove it.
+   */
+  .art-preloader {
+    display: none;
+  }
+
+  :global(html.art-intro) .art-preloader {
+    position: fixed;
+    inset: 0;
+    z-index: 999999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background-color: var(--art-intro-bg, #0b0b0e);
+    color: #fff;
+    font-family: "Anton SC", var(--font-editorial), sans-serif;
+    text-transform: uppercase;
+  }
+
+  .art-preloader__stage {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+  }
+
+  .art-preloader__frame {
+    position: relative;
+    width: min(25rem, 80vw);
+    height: min(31.25rem, 60vh);
+    overflow: hidden;
+  }
+
+  .art-preloader__img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    clip-path: polygon(0% 0%, 0% 0%, 0% 100%, 0% 100%);
+  }
+
+  .art-preloader__counter {
+    position: absolute;
+    right: 1.5rem;
+    bottom: 1.5rem;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+  }
+
+  .art-preloader__reel {
+    position: relative;
+    width: 2.5rem;
+    height: var(--num-h);
+    overflow: hidden;
+  }
+
+  .art-preloader__digits {
+    position: absolute;
+    width: 100%;
+  }
+
+  .art-preloader__num,
+  .art-preloader__percent {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: var(--num-h);
+    font-size: 3.75rem;
+    line-height: 1;
+  }
+
+  .art-preloader {
+    --num-h: 8rem;
+  }
+
+  @media (min-width: 768px) {
+    .art-preloader {
+      --num-h: 10rem;
+    }
+  }
+
+  @media (max-width: 700px) {
+    .art-preloader__counter {
+      right: 1rem;
+      bottom: 1rem;
+    }
+    .art-preloader__reel {
+      width: 1.75rem;
+    }
+    .art-preloader__num,
+    .art-preloader__percent {
+      font-size: 2.5rem;
+    }
+  }
+</style>
+
+<script>
+  import gsap from "gsap";
+
+  const TOTAL_DURATION = 6;
+
+  const html = () => document.documentElement;
+
+  /** Uncover the page while the overlay is still on screen fading out. */
+  function reveal() {
+    html().classList.add("art-revealed");
+  }
+
+  /** Drop the overlay and release the scroll lock. */
+  function finish(root: HTMLElement) {
+    root.remove();
+    html().classList.remove("art-intro", "art-revealed");
+  }
+
+  function initArtPreloader() {
+    const root = document.querySelector<HTMLElement>("[data-art-preloader]");
+    // Guard against the double init from module-eval + astro:page-load.
+    if (!root || root.dataset.started === "true") return;
+    root.dataset.started = "true";
+
+    // Reduced motion gets the gallery straight away, no intro.
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduce) {
+      finish(root);
+      return;
+    }
+
+    const images = Array.from(
+      root.querySelectorAll<HTMLImageElement>(".art-preloader__img"),
+    );
+    const digit1 = root.querySelector<HTMLElement>('[data-digit="1"]');
+    const digit2 = root.querySelector<HTMLElement>('[data-digit="2"]');
+    const digit3 = root.querySelector<HTMLElement>('[data-digit="3"]');
+
+    const animateDigit = (
+      digit: HTMLElement | null,
+      duration: number,
+      delay = 0,
+    ) => {
+      if (!digit) return;
+      const nums = digit.querySelectorAll(".art-preloader__num");
+      if (!nums.length) return;
+      const distance = (nums.length - 1) * (nums[0] as HTMLElement).clientHeight;
+      gsap.to(digit, { y: -distance, duration, delay, ease: "power2.inOut" });
+    };
+
+    const run = () => {
+      images.forEach((image, index) => {
+        gsap.fromTo(
+          image,
+          { clipPath: "polygon(0% 0%, 0% 0%, 0% 100%, 0% 100%)" },
+          {
+            clipPath: "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)",
+            duration: TOTAL_DURATION / images.length,
+            delay: (index / images.length) * TOTAL_DURATION,
+            ease: "power3.inOut",
+          },
+        );
+      });
+
+      animateDigit(digit1, 2, 5);
+      animateDigit(digit2, 6);
+      animateDigit(digit3, 5);
+
+      gsap.delayedCall(TOTAL_DURATION + 0.5, () => {
+        const tl = gsap.timeline();
+
+        tl.to(
+          images,
+          {
+            clipPath: "polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%)",
+            duration: 1,
+            stagger: 0.05,
+            ease: "power3.inOut",
+          },
+          0,
+        );
+
+        tl.to(
+          [digit1, digit2, digit3].filter(Boolean),
+          {
+            clipPath: "inset(100% 0% 0% 0%)",
+            duration: 1,
+            ease: "power2.inOut",
+          },
+          0,
+        );
+
+        /*
+         * Exit as a curtain, not a dissolve. Sliding the black panel off the
+         * top uncovers the gallery a strip at a time — cross-fading two
+         * full-screen layers instead reads as a muddy double-exposure.
+         * Starts before the frame has fully cleared so the two overlap.
+         */
+        tl.to(
+          root,
+          {
+            yPercent: -100,
+            duration: 1.15,
+            ease: "power4.inOut",
+            onStart: reveal,
+            onComplete: () => finish(root),
+          },
+          0.7,
+        );
+      });
+    };
+
+    const loaded = images.map(
+      (img) =>
+        new Promise<void>((resolve) => {
+          if (img.complete) return resolve();
+          img.addEventListener("load", () => resolve(), { once: true });
+          img.addEventListener("error", () => resolve(), { once: true });
+        }),
+    );
+
+    Promise.all(loaded).then(run);
+  }
+
+  initArtPreloader();
+  document.addEventListener("astro:page-load", initArtPreloader);
+</script>

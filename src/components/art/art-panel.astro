@@ -66,7 +66,8 @@ if (bg?.kind === "color") {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 3rem 1.5rem;
+    /* Extra top padding clears the floating nav mark, which is out of flow. */
+    padding: 5.5rem 1.5rem 3rem;
     transition:
       background-color 300ms ease,
       color 300ms ease;
@@ -165,7 +166,7 @@ if (bg?.kind === "color") {
 
   @media (max-width: 700px) {
     .art-panel {
-      padding: 2rem 1rem;
+      padding: 4.5rem 1rem 2rem;
     }
     .art-panel__img {
       max-height: 72vh;

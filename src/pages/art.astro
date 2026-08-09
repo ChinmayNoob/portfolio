@@ -4,15 +4,18 @@ import '~/styles/art.css';
 import UnstyledBaseLayout from '~/components/layout/unstyled-base-layout.astro';
 import ArtTopbar from '~/components/art/art-topbar.astro';
 import ArtPanel from '~/components/art/art-panel.astro';
+import ArtPreloader from '~/components/art/art-preloader.astro';
 import { artPieces } from '~/lib/art-data';
 
 const title = 'Art';
 const description = 'A showcase of my designs and visual work.';
 
 const first = artPieces[0];
-const navbarBg =
-  first?.background?.kind === 'color' ? first.background.bg : '#1d283a';
 
+/*
+ * Only the nav's starting colour — once the page is live an observer hands it
+ * whichever panel is under it. This just keeps the first paint correct.
+ */
 function readableTextOn(bg: string): string {
   const hex = bg.replace('#', '');
   if (!/^[0-9a-fA-F]{6}$/.test(hex)) return 'rgba(255, 255, 245, 0.92)';
@@ -25,11 +28,14 @@ function readableTextOn(bg: string): string {
     : 'rgba(255, 255, 245, 0.92)';
 }
 
-const navbarText = readableTextOn(navbarBg);
+const navbarText = readableTextOn(
+  first?.background?.kind === 'color' ? first.background.bg : '#1d283a',
+);
 ---
 
 <UnstyledBaseLayout seo={{ title, description }}>
-  <ArtTopbar bg={navbarBg} text={navbarText} />
+  <ArtPreloader />
+  <ArtTopbar text={navbarText} />
   <main class="art-main">
     {artPieces.map((piece, i) => (
       <ArtPanel piece={piece} index={i} />
@@ -132,6 +138,38 @@ const navbarText = readableTextOn(navbarBg);
 
   html.bookmarks-html body.bookmarks-body {
     display: block;
+  }
+
+  /*
+   * While the intro plays the page is pinned and hidden underneath it; the
+   * preloader adds .art-revealed as it starts fading out, so the gallery eases
+   * up into view underneath rather than snapping in after a black cut.
+   */
+  html.art-intro,
+  html.art-intro body {
+    overflow: hidden;
+  }
+
+  /*
+   * The gallery is fully opaque the whole time — the overlay covers it, then
+   * slides off. It only gets a small counter-lift so it settles into place as
+   * the curtain clears, which reads as one motion rather than two layers
+   * fading through each other.
+   */
+  html.art-intro body > *:not(.art-preloader) {
+    transform: translateY(2.5rem);
+    transition: transform 1150ms cubic-bezier(0.76, 0, 0.24, 1);
+  }
+
+  html.art-intro.art-revealed body > *:not(.art-preloader) {
+    transform: translateY(0);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html.art-intro body > *:not(.art-preloader) {
+      transform: none;
+      transition: none;
+    }
   }
 
   .art-main {

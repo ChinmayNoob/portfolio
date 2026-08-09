@@ -49,6 +49,29 @@ export const artPieces: ArtPiece[] = (
   ] satisfies ArtPiece[]
 ).sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0))
 
+/**
+ * Backdrop for the /art intro. Derived from the first panel so the two feel
+ * related, then darkened hard — matching it exactly would leave the curtain
+ * sliding off a field of its own colour, and the reveal would read as nothing
+ * moving at all. Pieces sort newest-first, so this shifts when art is added.
+ */
+export const artIntroBg: string = (() => {
+  const first = artPieces[0]?.background
+  const seed = first?.kind === "color" ? first.bg : "#1b1b1f"
+  return darken(seed, 0.42)
+})()
+
+/** Scale a #rrggbb toward black. `amount` is the fraction of brightness kept. */
+function darken(hex: string, amount: number): string {
+  const raw = hex.replace("#", "")
+  if (!/^[0-9a-fA-F]{6}$/.test(raw)) return "#0b0b0e"
+  const channel = (i: number) =>
+    Math.max(0, Math.round(parseInt(raw.slice(i, i + 2), 16) * amount))
+      .toString(16)
+      .padStart(2, "0")
+  return `#${channel(0)}${channel(2)}${channel(4)}`
+}
+
 /** "2026-08-09" -> "9th August 2026" */
 export function formatArtDate(iso: string): string {
   const parts = iso.split("-").map(Number)

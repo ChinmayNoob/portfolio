@@ -39,8 +39,9 @@
 
 /*
  * Each panel is one full screen, snapped into place as you scroll. Snap lives
- * on the root scroller (the viewport), with scroll-padding clearing the fixed
- * topbar so a snapped panel's top isn't hidden behind the chrome.
+ * on the root scroller (the viewport). The nav mark is fixed and therefore out
+ * of flow, so a panel's top edge lines up exactly with the viewport's — no
+ * scroll-padding correction needed.
  */
 html {
   scroll-snap-type: y mandatory;
@@ -51,6 +52,23 @@ html {
   width: 100%;
   scroll-snap-align: start;
   scroll-snap-stop: always;
+}
+
+/*
+ * No scrollbar. Beyond keeping the full-bleed panels clean, it removes the
+ * jump at the end of the intro: the preloader locks scrolling, so the bar
+ * would otherwise pop in and shove the layout sideways the moment the curtain
+ * lifts. Scrolling itself is untouched — wheel, keys, and touch all work.
+ */
+html,
+body {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* legacy Edge */
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  display: none; /* Chrome, Safari */
 }
 
 @media (prefers-reduced-motion: reduce) {

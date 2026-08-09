@@ -1,51 +1,59 @@
 ---
+/*
+ * Floating nav mark for /art. No background slab: it sits over the panels and
+ * takes its colour from whichever panel is currently under it, so it always
+ * reads correctly without introducing a band of colour that only matches one
+ * piece. Fixed positioning also keeps it out of the layout flow, which matters
+ * because the panels are 100dvh and scroll-snapped — a bar in flow would push
+ * the first snap position off by its own height.
+ */
 interface Props {
-  bg?: string;
+  /** Colour before the observer has run, so the first paint isn't wrong. */
   text?: string;
 }
 
-const { bg = 'var(--c-bg)', text = 'var(--c-text-1)' } = Astro.props;
+const { text = "rgba(255, 255, 245, 0.92)" } = Astro.props;
 ---
 
 <nav
   class="art-topbar"
-  style={`background-color:${bg};--art-nav-fg:${text};`}
+  style={`--art-nav-fg:${text};`}
   aria-label="Art"
+  data-art-topbar
 >
-  <div class="art-topbar__inner">
-    <a href="/" class="art-topbar__brand" aria-label="art — back home">
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        aria-hidden="true"
-        class="art-topbar__arrow"
-      >
-        <path d="M19 12H5"></path>
-        <path d="m12 19-7-7 7-7"></path>
-      </svg>
-      <span class="art-topbar__word">art</span>
-    </a>
-  </div>
+  <a href="/" class="art-topbar__brand" aria-label="art — back home">
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      aria-hidden="true"
+      class="art-topbar__arrow"
+    >
+      <path d="M19 12H5"></path>
+      <path d="m12 19-7-7 7-7"></path>
+    </svg>
+    <span class="art-topbar__word">art</span>
+  </a>
 </nav>
 
 <style>
   .art-topbar {
-    position: relative;
-    z-index: 10;
-    color: var(--art-nav-fg);
-  }
-
-  .art-topbar__inner {
-    height: 4rem;
-    padding: 0 1.5rem;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 50;
     display: flex;
     align-items: center;
-    justify-content: flex-start;
+    height: 4rem;
+    padding: 0 1.5rem;
+    color: var(--art-nav-fg);
+    /* Matches the panel's own background/colour transition. */
+    transition: color 300ms ease;
+    pointer-events: none;
   }
 
   .art-topbar__brand {
@@ -53,16 +61,23 @@ const { bg = 'var(--c-bg)', text = 'var(--c-text-1)' } = Astro.props;
     align-items: center;
     gap: 0.5rem;
     text-decoration: none;
-    color: var(--art-nav-fg);
+    color: inherit;
+    pointer-events: auto;
     transition: opacity 200ms ease;
   }
 
   .art-topbar__brand:hover {
-    opacity: 0.7;
+    opacity: 0.6;
   }
 
   .art-topbar__brand:active {
     transform: scale(0.97);
+  }
+
+  .art-topbar__brand:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 6px;
+    border-radius: 2px;
   }
 
   .art-topbar__arrow {
@@ -80,8 +95,79 @@ const { bg = 'var(--c-bg)', text = 'var(--c-text-1)' } = Astro.props;
   }
 
   @media (max-width: 700px) {
-    .art-topbar__inner {
+    .art-topbar {
       padding: 0 1rem;
     }
   }
+
+  @media (prefers-reduced-motion: reduce) {
+    .art-topbar {
+      transition: none;
+    }
+    .art-topbar__brand:active {
+      transform: none;
+    }
+  }
 </style>
+
+<script>
+  /*
+   * Track which panel sits under the mark and copy that panel's own text
+   * colour onto it. Reading the computed colour (rather than the data) means
+   * `auto` panels — whose palette comes from CSS and flips with the site
+   * theme — are handled without duplicating that logic here.
+   */
+  function initArtTopbar() {
+    const nav = document.querySelector<HTMLElement>("[data-art-topbar]");
+    const panels = Array.from(
+      document.querySelectorAll<HTMLElement>(".art-panel"),
+    );
+    // Guard the double init from module-eval + astro:page-load.
+    if (!nav || !panels.length || nav.dataset.bound === "true") return;
+    nav.dataset.bound = "true";
+
+    let active: HTMLElement = panels[0];
+
+    const paint = () => {
+      nav.style.setProperty("--art-nav-fg", getComputedStyle(active).color);
+    };
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            active = entry.target as HTMLElement;
+            paint();
+          }
+        }
+      },
+      // Only the strip of viewport directly beneath the mark counts, so the
+      // colour swaps exactly as a new panel arrives under it.
+      { rootMargin: "0px 0px -88% 0px", threshold: 0 },
+    );
+
+    panels.forEach((panel) => observer.observe(panel));
+    paint();
+
+    // The site theme inverts the `auto` panels, so re-read on a theme flip.
+    const themeWatcher = new MutationObserver(() =>
+      requestAnimationFrame(paint),
+    );
+    themeWatcher.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class", "data-theme"],
+    });
+
+    document.addEventListener(
+      "astro:before-swap",
+      () => {
+        observer.disconnect();
+        themeWatcher.disconnect();
+      },
+      { once: true },
+    );
+  }
+
+  initArtTopbar();
+  document.addEventListener("astro:page-load", initArtTopbar);
+</script>
