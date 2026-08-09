@@ -1,5 +1,4 @@
 ---
-import { Image } from "astro:assets";
 import { cn } from "~/lib/utils";
 import { formatArtDate, type ArtPiece } from "~/lib/art-data";
 
@@ -49,12 +48,21 @@ if (bg?.kind === "color") {
     </header>
 
     <div class={cn("art-panel__media", isFull && "art-panel__media--full")}>
-      <Image
-        src={piece.image}
+      {/*
+        Plain <img>, not <Image>: the sources are already final-size WebP, so
+        going through the image service would only re-encode them in the
+        serverless function on every cache miss. width/height come off the
+        import so the full-bleed panels don't shift as each one loads.
+      */}
+      <img
+        src={piece.image.src}
+        width={piece.image.width}
+        height={piece.image.height}
         alt={piece.title}
-        widths={[480, 768, 1080, 1600, 2160]}
-        sizes={isFull ? "100vw" : "80vh"}
         class="art-panel__img"
+        loading={index === 0 ? "eager" : "lazy"}
+        fetchpriority={index === 0 ? "high" : "auto"}
+        decoding="async"
       />
     </div>
   </div>

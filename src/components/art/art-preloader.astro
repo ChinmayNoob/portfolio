@@ -5,7 +5,6 @@
  * Ported from the zoro-studios preloader (GSAP + Anton SC).
  */
 import "@fontsource/anton-sc/400.css";
-import { getImage } from "astro:assets";
 import { artIntroBg, artPieces } from "~/lib/art-data";
 
 /** How many frames the wipe sequence plays. Art pieces repeat if there are fewer. */
@@ -17,11 +16,12 @@ const slots = Array.from(
   (_, i) => sources[i % sources.length],
 ).filter(Boolean);
 
-const images = await Promise.all(
-  slots.map((piece) =>
-    getImage({ src: piece.image, widths: [640, 1080], format: "webp" }),
-  ),
-);
+/*
+ * The same URLs the panels use, deliberately — the intro shows the pieces the
+ * gallery is about to, so sharing one asset per piece means the browser
+ * fetches each once and the panels below are already warm.
+ */
+const images = slots.map((piece) => piece.image);
 
 /*
  * Digit reels. Every cell is rendered here rather than built in JS — Astro's
@@ -60,8 +60,8 @@ const HUNDREDS = [0, 1];
           <img
             class="art-preloader__img"
             src={img.src}
-            srcset={img.srcSet.attribute}
-            sizes="(max-width: 700px) 80vw, 25rem"
+            width={img.width}
+            height={img.height}
             alt=""
             aria-hidden="true"
             decoding="async"

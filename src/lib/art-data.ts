@@ -1,6 +1,12 @@
-import codeIsDead from "~/assets/art/code-is-dead.png"
-import littleRooms from "~/assets/art/little-rooms.png"
-import space from "~/assets/art/space.png"
+/*
+ * Art sources are pre-converted WebP, committed at their final size — /art
+ * renders them with a plain <img> rather than <Image>, so nothing resizes
+ * these at request time. Export new pieces as WebP (1600w is plenty; the
+ * panels never render wider) before adding them here.
+ */
+import codeIsDead from "~/assets/art/code-is-dead.webp"
+import littleRooms from "~/assets/art/little-rooms.webp"
+import space from "~/assets/art/space.webp"
 
 export type ArtAspectRatio = "9:16" | "1:1" | "4:5" | "full"
 
