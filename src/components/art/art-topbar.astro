@@ -1,0 +1,87 @@
+---
+interface Props {
+  bg?: string;
+  text?: string;
+}
+
+const { bg = 'var(--c-bg)', text = 'var(--c-text-1)' } = Astro.props;
+---
+
+<nav
+  class="art-topbar"
+  style={`background-color:${bg};--art-nav-fg:${text};`}
+  aria-label="Art"
+>
+  <div class="art-topbar__inner">
+    <a href="/" class="art-topbar__brand" aria-label="art — back home">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+        class="art-topbar__arrow"
+      >
+        <path d="M19 12H5"></path>
+        <path d="m12 19-7-7 7-7"></path>
+      </svg>
+      <span class="art-topbar__word">art</span>
+    </a>
+  </div>
+</nav>
+
+<style>
+  .art-topbar {
+    position: relative;
+    z-index: 10;
+    color: var(--art-nav-fg);
+  }
+
+  .art-topbar__inner {
+    height: 4rem;
+    padding: 0 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+  }
+
+  .art-topbar__brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    color: var(--art-nav-fg);
+    transition: opacity 200ms ease;
+  }
+
+  .art-topbar__brand:hover {
+    opacity: 0.7;
+  }
+
+  .art-topbar__brand:active {
+    transform: scale(0.97);
+  }
+
+  .art-topbar__arrow {
+    width: 1.25rem;
+    height: 1.25rem;
+    flex: none;
+  }
+
+  .art-topbar__word {
+    font-family: var(--font-editorial);
+    font-size: 1.25rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    line-height: 1;
+  }
+
+  @media (max-width: 700px) {
+    .art-topbar__inner {
+      padding: 0 1rem;
+    }
+  }
+</style>

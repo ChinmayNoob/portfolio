@@ -1,0 +1,63 @@
+/* ================================================== */
+/* /art — full-screen design gallery                  */
+/* ================================================== */
+
+:root {
+  /*
+   * Panel palettes. The panel inverts the active theme: a light site gets
+   * dark panels, a dark site gets light panels, so the artwork always reads
+   * against a contrasting field.
+   */
+  --art-bg-dark: #1b1b1f;
+  --art-text-dark: rgba(255, 255, 245, 0.92);
+  --art-bg-light: #ffffff;
+  --art-text-light: rgba(60, 60, 67, 0.92);
+}
+
+/*
+ * Panels alternate dark/light so consecutive pieces always contrast — a dark
+ * field, then a light one, then dark. The starting colour inverts the active
+ * site theme: a light site opens dark, a dark site opens light. Per-piece
+ * background overrides (color/image) apply inline and win over these.
+ */
+.art-panel:nth-child(odd) {
+  background-color: var(--art-bg-dark);
+  color: var(--art-text-dark);
+}
+.art-panel:nth-child(even) {
+  background-color: var(--art-bg-light);
+  color: var(--art-text-light);
+}
+.dark .art-panel:nth-child(odd) {
+  background-color: var(--art-bg-light);
+  color: var(--art-text-light);
+}
+.dark .art-panel:nth-child(even) {
+  background-color: var(--art-bg-dark);
+  color: var(--art-text-dark);
+}
+
+/*
+ * Each panel is one full screen, snapped into place as you scroll. Snap lives
+ * on the root scroller (the viewport), with scroll-padding clearing the fixed
+ * topbar so a snapped panel's top isn't hidden behind the chrome.
+ */
+html {
+  scroll-snap-type: y mandatory;
+}
+
+.art-panel {
+  min-height: 100dvh;
+  width: 100%;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-snap-type: none;
+  }
+  .art-panel {
+    scroll-snap-stop: normal;
+  }
+}

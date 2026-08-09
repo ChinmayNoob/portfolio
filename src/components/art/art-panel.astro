@@ -1,0 +1,174 @@
+---
+import { Image } from "astro:assets";
+import { cn } from "~/lib/utils";
+import { formatArtDate, type ArtPiece } from "~/lib/art-data";
+
+interface Props {
+  piece: ArtPiece;
+  index: number;
+}
+
+const { piece, index } = Astro.props;
+
+const aspect = piece.aspect ?? "9:16";
+const isFull = aspect === "full";
+
+/*
+ * Resolve the background. `auto` leaves the inversion to the .art-panel
+ * class in art.css; color and image overrides apply inline so they win over
+ * the class-based palette.
+ */
+let panelClass = "art-panel";
+let panelStyle: string | undefined;
+
+const bg = piece.background;
+if (bg?.kind === "color") {
+  const text = bg.text ?? "rgba(255, 255, 245, 0.92)";
+  panelClass = cn(panelClass, "art-panel--override");
+  panelStyle = `background-color:${bg.bg};color:${text};`;
+} else if (bg?.kind === "image") {
+  const text =
+    bg.text === "dark" ? "rgba(60, 60, 67, 0.92)" : "rgba(255, 255, 245, 0.92)";
+  panelClass = cn(panelClass, "art-panel--override", "art-panel--image");
+  panelStyle = `background-image:url(${bg.src.src});color:${text};`;
+}
+---
+
+<section class={panelClass} style={panelStyle} aria-label={piece.title}>
+  <div class="art-panel__inner">
+    <header class="art-panel__header">
+      <div class="art-panel__heading">
+        <span class="art-panel__index">
+          {String(index + 1).padStart(2, "0")}
+        </span>
+        <h2 class="art-panel__title">{piece.title}</h2>
+      </div>
+      <time class="art-panel__date" datetime={piece.date}>
+        {formatArtDate(piece.date)}
+      </time>
+    </header>
+
+    <div class={cn("art-panel__media", isFull && "art-panel__media--full")}>
+      <Image
+        src={piece.image}
+        alt={piece.title}
+        widths={[480, 768, 1080, 1600, 2160]}
+        sizes={isFull ? "100vw" : "80vh"}
+        class="art-panel__img"
+      />
+    </div>
+  </div>
+</section>
+
+<style>
+  .art-panel {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 1.5rem;
+    transition:
+      background-color 300ms ease,
+      color 300ms ease;
+  }
+
+  .art-panel--image {
+    background-size: cover;
+    background-position: center;
+  }
+
+  /* Subtle scrim so overlaid text stays legible over a busy image. */
+  .art-panel--image::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0.32),
+      rgba(0, 0, 0, 0.2)
+    );
+    pointer-events: none;
+  }
+
+  .art-panel__inner {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 72rem;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.75rem;
+  }
+
+  .art-panel__header {
+    width: 100%;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .art-panel__heading {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+    min-width: 0;
+  }
+
+  .art-panel__index {
+    font-size: 0.8rem;
+    letter-spacing: 0.08em;
+    opacity: 0.5;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .art-panel__title {
+    margin: 0;
+    font-family: var(--font-editorial);
+    font-size: clamp(1.25rem, 2.5vw, 1.75rem);
+    font-weight: 600;
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+    text-align: left;
+  }
+
+  .art-panel__date {
+    flex-shrink: 0;
+    font-size: 0.8rem;
+    letter-spacing: 0.02em;
+    opacity: 0.6;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .art-panel__media {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+  }
+
+  .art-panel__img {
+    max-height: 78vh;
+    width: auto;
+    max-width: 100%;
+    object-fit: contain;
+  }
+
+  .art-panel__media--full .art-panel__img {
+    width: 100%;
+    max-height: none;
+  }
+
+  @media (max-width: 700px) {
+    .art-panel {
+      padding: 2rem 1rem;
+    }
+    .art-panel__img {
+      max-height: 72vh;
+    }
+  }
+</style>
