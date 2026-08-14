@@ -10,7 +10,8 @@ h6 {
 }
 
 .base-nav nav a,
-.mobile-nav nav a {
+.mobile-nav nav a,
+.mobile-breadcrumb span {
   text-transform: lowercase;
 }
 

@@ -43,7 +43,7 @@ function PostYearList({ posts }: { posts: PostData[] }) {
       {yearList.map(([year, postList]) => {
         return (
           <div key={year} className="group/year relative">
-            <div className="absolute top-0 right-full mr-4 translate-y-[2px] select-none">
+            <div className="mb-2 select-none md:absolute md:top-0 md:right-full md:mr-4 md:mb-0 md:translate-y-[2px]">
               <h2 className="font-editorial text-text-2 group-hover/year:bg-gray-soft -mx-1 rounded-md px-1 text-[1.35rem] leading-none tracking-[-0.01em] transition group-hover:opacity-40 group-hover/year:opacity-100!">
                 {year}
               </h2>

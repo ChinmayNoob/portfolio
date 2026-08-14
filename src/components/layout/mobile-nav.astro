@@ -4,9 +4,10 @@ import ThemeToggle from '~/components/ui/theme-toggle.astro';
 
 export type Props = {
   currentPath?: string;
+  pageTitle?: string;
 };
 
-const { currentPath = '/' } = Astro.props;
+const { currentPath = '/', pageTitle } = Astro.props;
 
 const mobileNavItems = [
   { href: '/', label: 'Home' },
@@ -15,24 +16,137 @@ const mobileNavItems = [
   { href: '/art', label: 'Designs' },
   { href: '/posts', label: 'Posts' },
 ];
+
+function humanize(segment: string) {
+  return segment
+    .replace(/[-_]/g, ' ')
+    .replace(/^./, (c) => c.toUpperCase());
+}
+
+type Crumb = { label: string; href?: string };
+
+const normalizedPath =
+  currentPath.length > 1 ? currentPath.replace(/\/$/, '') : currentPath;
+const segments = normalizedPath === '/' ? [] : normalizedPath.split('/').filter(Boolean);
+
+const crumbs: Crumb[] = [];
+
+if (segments.length === 0) {
+  crumbs.push({ label: 'Home' });
+} else {
+  crumbs.push({ label: 'Home', href: '/' });
+
+  const sectionHref = `/${segments[0]}`;
+  const sectionMatch = mobileNavItems.find((item) => item.href === sectionHref);
+
+  if (sectionMatch) {
+    const isCurrent = normalizedPath === sectionMatch.href;
+    crumbs.push(
+      isCurrent
+        ? { label: sectionMatch.label }
+        : { label: sectionMatch.label, href: sectionMatch.href },
+    );
+  }
+
+  if (segments.length > 1 || !sectionMatch) {
+    crumbs.push({ label: pageTitle ?? humanize(segments[segments.length - 1]) });
+  }
+}
+
+const lastIndex = crumbs.length - 1;
 ---
 
 <header class="mobile-nav font-editorial text-base font-semibold">
-  <nav class="mobile-nav-links" aria-label="Mobile navigation">
-    <ThemeToggle />
-    {mobileNavItems.map(({ href, label }) => {
-      const isActive = currentPath === href || (href !== '/' && currentPath.startsWith(href + '/'));
-      return (
-        <a
-          href={href}
-          class={cn(
-            'rounded-md px-2.5 py-1 transition active:scale-95',
-            isActive && 'mobile-nav-link-active',
+  <nav class="mobile-breadcrumb" aria-label="Breadcrumb">
+    <ol>
+      {crumbs.map(({ href, label }, i) => (
+        <li>
+          {href ? (
+            <a href={href}>{label}</a>
+          ) : (
+            <span aria-current={i === lastIndex ? 'page' : undefined}>{label}</span>
           )}
-        >
-          {label}
-        </a>
-      );
-    })}
+          {i < lastIndex && (
+            <span class="mobile-breadcrumb-sep" aria-hidden="true">/</span>
+          )}
+        </li>
+      ))}
+    </ol>
   </nav>
+
+  <div class="mobile-nav-actions">
+    <ThemeToggle class="p-1.5" />
+
+    <details class="mobile-menu">
+      <summary class="mobile-menu-trigger" aria-label="Open navigation menu">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="22"
+          height="22"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+        >
+          <path d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+      </summary>
+
+      <nav class="mobile-menu-panel" aria-label="Mobile navigation">
+        {mobileNavItems.map(({ href, label }) => {
+          const isActive =
+            currentPath === href || (href !== '/' && currentPath.startsWith(href + '/'));
+          return (
+            <a
+              href={href}
+              class={cn(
+                'rounded-md px-2.5 py-1 transition active:scale-95',
+                isActive && 'mobile-nav-link-active',
+              )}
+            >
+              {label}
+            </a>
+          );
+        })}
+      </nav>
+    </details>
+  </div>
 </header>
+
+<script>
+  function initMobileMenu() {
+    document
+      .querySelectorAll<HTMLDetailsElement>('.mobile-menu')
+      .forEach((menu) => {
+        if (menu.dataset.menuInit) return;
+        menu.dataset.menuInit = 'true';
+
+        const panel = menu.querySelector('.mobile-menu-panel');
+        const summary = menu.querySelector('summary');
+
+        const close = () => {
+          menu.open = false;
+        };
+
+        panel?.querySelectorAll('a').forEach((a) => {
+          a.addEventListener('click', close);
+        });
+
+        document.addEventListener('click', (e) => {
+          if (menu.open && e.target instanceof Node && !menu.contains(e.target)) {
+            close();
+          }
+        });
+
+        menu.addEventListener('keydown', (e) => {
+          if (e instanceof KeyboardEvent && e.key === 'Escape' && menu.open) {
+            close();
+            summary?.focus();
+          }
+        });
+      });
+  }
+  document.addEventListener('DOMContentLoaded', initMobileMenu);
+  document.addEventListener('astro:page-load', initMobileMenu);
+</script>

@@ -28,7 +28,7 @@ const currentPath = new URL(Astro.request.url).pathname;
   <body>
     <div class="blur-layer" aria-hidden="true"></div>
     <div class="mobile-nav-wrapper">
-      <MobileNav currentPath={currentPath} />
+      <MobileNav currentPath={currentPath} pageTitle={seo?.title} />
     </div>
     <div class="page-shell">
       <aside class="page-nav-rail">

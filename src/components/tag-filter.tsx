@@ -24,7 +24,7 @@ export function TagFilter({
 
   return (
     <div className="relative my-14 border-l pl-6 md:pl-8">
-      <div className="absolute top-0 right-full mr-4 select-none">
+      <div className="mb-2 select-none md:absolute md:top-0 md:right-full md:mr-4 md:mb-0">
         <span className="font-editorial text-text-2 -mx-1 inline-block rounded-md px-1 text-[1.05rem] leading-none tracking-[-0.01em]">
           Tags
         </span>
