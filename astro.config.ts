@@ -22,8 +22,6 @@ import { remarkReadingTime } from './plugins/remark-reading-time.mjs';
 import { transformerFragment } from './plugins/transformer-fragment';
 import { cfg } from './src/cfg';
 
-import db from '@astrojs/db';
-
 // https://astro.build/config
 export default defineConfig({
   site: cfg.siteUrl,
@@ -75,5 +73,5 @@ export default defineConfig({
         },
       ],
     ],
-  }), db()],
+  })],
 });

@@ -1,4 +1,5 @@
-import { db, Stamps } from "astro:db";
+import { db } from "../src/db/client";
+import { stamps } from "../src/db/schema";
 
 const stampData = [
   {
@@ -456,8 +457,10 @@ const stampData = [
   { country: "Kosovo", imageUrl: "", hue: 220 },
 ];
 
-export default async function () {
-  console.log("Seeding Stamps table in production...");
-  await db.insert(Stamps).values(stampData);
+async function main() {
+  console.log("Seeding Stamps table...");
+  await db.insert(stamps).values(stampData);
   console.log("Stamps table seeded successfully!");
 }
+
+main();

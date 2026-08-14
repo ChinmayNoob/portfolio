@@ -1,12 +1,19 @@
 ---
 export const prerender = false;
 
-import { db, GuestBook, Stamps, desc, eq, asc } from "astro:db";
+import { asc, desc, eq } from "drizzle-orm";
+import { db } from "~/db/client";
+import { guestBook, stamps } from "~/db/schema";
 import BaseLayout from "~/components/layout/base-layout.astro";
 import GuestbookEntry from "../components/Guestbook/GuestbookEntry.astro";
 import AlertMessage from "../components/Guestbook/AlertMessage.astro";
 import Pagination from "../components/Guestbook/Pagination.astro";
 import GuestbookForm from "../components/Guestbook/GuestbookForm.astro";
+
+// Archived for now: page and data stay in place, route is just hidden.
+if (!Astro.url.searchParams.has("preview")) {
+  return new Response(null, { status: 404 });
+}
 
 const PER_PAGE = 10;
 const defaultStampAsset = "/stamps/default.png";
@@ -52,12 +59,12 @@ if (Astro.request.method === "POST") {
     return Astro.redirect("/guestbook?error=too_many_links");
   }
 
-  await db.insert(GuestBook).values({
+  await db.insert(guestBook).values({
     author,
     content,
     country,
     link: link || null,
-    timestamp: new Date(),
+    timestamp: new Date().toISOString(),
   });
 
   return Astro.redirect("/guestbook?success=message_added");
@@ -69,27 +76,27 @@ const offset = (page - 1) * PER_PAGE;
 const [rawEntries, stampRows] = await Promise.all([
   db
     .select({
-      author: GuestBook.author,
-      link: GuestBook.link,
-      content: GuestBook.content,
-      country: GuestBook.country,
-      timestamp: GuestBook.timestamp,
-      stampImageUrl: Stamps.imageUrl,
-      stampHue: Stamps.hue,
+      author: guestBook.author,
+      link: guestBook.link,
+      content: guestBook.content,
+      country: guestBook.country,
+      timestamp: guestBook.timestamp,
+      stampImageUrl: stamps.imageUrl,
+      stampHue: stamps.hue,
     })
-    .from(GuestBook)
-    .leftJoin(Stamps, eq(GuestBook.country, Stamps.country))
-    .orderBy(desc(GuestBook.timestamp))
+    .from(guestBook)
+    .leftJoin(stamps, eq(guestBook.country, stamps.country))
+    .orderBy(desc(guestBook.timestamp))
     .limit(PER_PAGE + 1)
     .offset(offset),
   db
-    .select({ country: Stamps.country })
-    .from(Stamps)
-    .orderBy(asc(Stamps.country)),
+    .select({ country: stamps.country })
+    .from(stamps)
+    .orderBy(asc(stamps.country)),
 ]);
 
 const hasNextPage = rawEntries.length > PER_PAGE;
-const guestBook = hasNextPage ? rawEntries.slice(0, PER_PAGE) : rawEntries;
+const guestBookEntries = hasNextPage ? rawEntries.slice(0, PER_PAGE) : rawEntries;
 const countries = stampRows.map((s) => s.country);
 
 const success = Astro.url.searchParams.get("success");
@@ -148,7 +155,7 @@ const error = Astro.url.searchParams.get("error");
 
     <section class="guestbook-entries">
       {
-        guestBook.map((entry) => {
+        guestBookEntries.map((entry) => {
           const imageAssetForEntry = entry.stampImageUrl
             ? generateOptimizedCloudinaryUrl(entry.stampImageUrl)
             : defaultStampAsset;
