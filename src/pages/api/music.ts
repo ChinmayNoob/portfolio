@@ -1,41 +1,27 @@
 import type { APIRoute } from 'astro';
-import { BENTO } from '~/data/bento';
-import { resolveTracks } from '~/lib/itunes';
+import type { Track } from '~/lib/itunes';
+import tracks from '~/data/tracks.json';
 
-/** Required so this route runs on the server at request time (calls iTunes). */
+/** Kept server-side so the tile's fetch stays same-origin, as it was before. */
 export const prerender = false;
 
 /**
- * The music tile used to call itunes.apple.com straight from the browser, which
- * prod blocked as a cross-origin request. Resolving here makes the tile's fetch
- * same-origin, and the shared edge cache below means Apple sees roughly one
- * request a day for the whole site rather than one per cold visitor — which also
- * keeps us clear of its per-IP rate limit.
+ * The tile used to call itunes.apple.com from the browser, which prod blocked
+ * cross-origin; resolving here fixed that. Since the move to Cloudflare this
+ * route can't call Apple either — Apple 403s the shared Workers egress IP
+ * (2a06:98c0:3600::103) regardless of headers, and 429s /search on the same
+ * basis. Headers, retries and backoff are all useless against an IP block.
+ *
+ * So the list is resolved ahead of time by scripts/refresh-tracks.mjs and
+ * committed as src/data/tracks.json. The playlist is four pinned track IDs
+ * that change maybe never, so there was little point asking Apple at runtime
+ * even when it worked. Re-run that script when the track list changes.
  */
 const CACHE_OK =
   'public, max-age=0, s-maxage=86400, stale-while-revalidate=604800';
 
-/**
- * Short, so a transient Apple failure is not pinned at the edge for a day. The
- * `stale-while-revalidate` above means a previous good response keeps serving
- * for up to a week regardless, so a blip is usually invisible to visitors.
- */
-const CACHE_ERROR = 'public, max-age=0, s-maxage=60';
-
-const json = (body: unknown, status: number, cache: string) =>
-  new Response(JSON.stringify(body), {
-    status,
-    headers: { 'Content-Type': 'application/json', 'Cache-Control': cache },
+export const GET: APIRoute = async () =>
+  new Response(JSON.stringify({ tracks: tracks as Track[] }), {
+    status: 200,
+    headers: { 'Content-Type': 'application/json', 'Cache-Control': CACHE_OK },
   });
-
-export const GET: APIRoute = async () => {
-  try {
-    const tracks = await resolveTracks([...BENTO.music.tracks]);
-    // An empty list means every configured track is absent from the catalogue —
-    // a config problem, not an outage, so it is safe to cache normally.
-    return json({ tracks }, 200, CACHE_OK);
-  } catch (error) {
-    console.error('[api/music] failed to resolve tracks', error);
-    return json({ tracks: [], error: 'upstream_failed' }, 502, CACHE_ERROR);
-  }
-};
