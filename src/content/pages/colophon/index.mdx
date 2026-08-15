@@ -1,7 +1,7 @@
 ---
 title: Colophon
 description: The tools, decisions, and people behind this site
-dateModified: 2026-03-21
+dateModified: 2026-08-16
 img: ['./colophon.jpeg']
 imgAlt: Minimalist colophon page with bold 'COLOPHON' text and publication details.
 ---
@@ -15,7 +15,7 @@ This page serves that purpose for this site.
 ## About This Site
 
 This site has been my corner of the internet since early 2026 (and in other forms before that).
-It is a portfolio and a notebook: longer posts, a [now](/now) page, [zibaldone](/zibaldone), a [bookshelf](/bookshelf), and whatever else I feel like publishing.
+It is a portfolio and a notebook: longer posts, a [now](/now) page, [zibaldone](/zibaldone), a [bookshelf](/bookshelf), an [art](/art) gallery, and whatever else I feel like publishing.
 
 I treat it as a long-term project. I want a stack I enjoy maintaining—mostly static files, minimal runtime, and room to iterate without throwing everything away every year.
 That philosophy shapes most of the technical choices below.
@@ -27,7 +27,9 @@ Content lives in Markdown and MDX next to the code, so I can edit it in any edit
 
 Where the UI needs interactivity—things like the posts index, theme toggle, and small client widgets—I reach for [React](https://react.dev/) through Astro’s islands so only those pieces hydrate.
 
-The site is deployed as static HTML on [Vercel](https://vercel.com/). There is no CMS: pages are MDX files in the repo, same workflow as the rest of the codebase.
+The site is deployed on [Cloudflare Workers](https://workers.cloudflare.com/)—it moved off Vercel in August 2026. Pages are still static HTML served from the edge; a couple of small routes render on demand, and pushing to `main` builds and deploys on its own.
+
+There is no CMS: pages are MDX files in the repo, same workflow as the rest of the codebase.
 
 ## Typography
 
@@ -64,7 +66,7 @@ If something is hard to use with a keyboard or a screen reader, I want to know.
 
 ## Inspiration
 
-- [Eva Decker](https://eva.town/) for digital gardens and a certain calm, intentional personal site energy.
+- [Ky Decker](https://ky.fyi/) for digital gardens and a certain calm, intentional personal site energy.
 
 
 ## Source
