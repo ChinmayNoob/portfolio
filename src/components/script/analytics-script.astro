@@ -25,3 +25,11 @@ import { cfg } from '~/cfg';
     />
   )
 }
+
+{
+  cfg.analytics?.provider === 'cloudflare' && (
+    <Fragment
+      set:html={`<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "${cfg.analytics.token}"}'></script>`}
+    />
+  )
+}

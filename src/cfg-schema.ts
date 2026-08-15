@@ -11,6 +11,15 @@ export const analyticsSchema = z.union([
     websiteId: z.string(),
     host: z.string().optional(),
   }),
+  /*
+   * Cloudflare Web Analytics. The dashboard's "automatic setup" injects this
+   * beacon by rewriting HTML at the edge, which does not happen for responses
+   * served by a Worker — so on this site it has to go in the page by hand.
+   */
+  z.object({
+    provider: z.literal('cloudflare'),
+    token: z.string(),
+  }),
 ]);
 
 export const socialLinkSchema = z.union([

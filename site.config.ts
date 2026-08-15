@@ -7,10 +7,12 @@ const config: SiteConfig = {
   description: 'My personal blog about software development, AI, and other topics.',
   favicon: '/favicon.svg',
   ogImage: '/image.webp',
-  // analytics: {
-  //   provider: 'umami',
-  //   websiteId: 'your-umami-website-id',
-  // },
+  // Not a secret — the beacon token ships in the page source of every site
+  // using Cloudflare Web Analytics; it only identifies which site to report to.
+  analytics: {
+    provider: 'cloudflare',
+    token: '675b845c85f9470287c6bc884a14bdba',
+  },
   bio: {
     name: 'chinmay sawant',
     avatar: '/chinmay.webp',
