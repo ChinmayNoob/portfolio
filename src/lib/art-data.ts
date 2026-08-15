@@ -7,6 +7,7 @@
 import codeIsDead from "~/assets/art/code-is-dead.webp"
 import littleRooms from "~/assets/art/little-rooms.webp"
 import space from "~/assets/art/space.webp"
+import time from "~/assets/art/time.webp"
 
 export type ArtAspectRatio = "9:16" | "1:1" | "4:5" | "full"
 
@@ -32,6 +33,13 @@ export interface ArtPiece {
 
 export const artPieces: ArtPiece[] = (
   [
+    {
+      title: "Time",
+      date: "2026-08-13",
+      image: time,
+      aspect: "1:1",
+      background: { kind: "color", bg: "#000000" },
+    },
     {
       title: "Code is Dead",
       date: "2026-08-09",
