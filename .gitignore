@@ -25,5 +25,8 @@ pnpm-debug.log*
 # vercel cli local project link (deploys use git integration)
 .vercel/
 
+# wrangler local state
+.wrangler/
+
 # local hud/tool state
 .omc/

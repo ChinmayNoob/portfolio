@@ -1,5 +1,8 @@
 ---
-import { getCollection, getEntry } from 'astro:content';
+import {
+  getCollection,
+  type CollectionEntry,
+} from 'astro:content';
 import PostLayout from '~/components/layout/post-layout.astro';
 import {
   getPostsCollection,
@@ -7,30 +10,17 @@ import {
   isDraft,
 } from '~/lib/mdx/post';
 
-const rawSlug = Astro.params.slug;
-const slug =
-  rawSlug == null
-    ? ''
-    : Array.isArray(rawSlug)
-      ? rawSlug.join('/')
-      : rawSlug;
-
-if (!slug) {
-  return new Response(null, { status: 404, statusText: 'Not Found' });
-}
-
-let post = await getEntry('posts', slug);
-
-if (!post) {
+export async function getStaticPaths() {
   const allPosts = await getCollection('posts');
-  post =
-    allPosts.find((p) => p.slug === slug || p.slug === `${slug}/index`) ??
-    undefined;
+  return allPosts
+    .filter((post) => !isDraft(post))
+    .map((post) => ({
+      params: { slug: post.slug.replace(/\/index$/, '') },
+      props: { post },
+    }));
 }
 
-if (!post || isDraft(post)) {
-  return new Response(null, { status: 404, statusText: 'Not Found' });
-}
+const { post } = Astro.props as { post: CollectionEntry<'posts'> };
 
 const posts = await getPostsCollection();
 const index = posts.findIndex((p) => p.id === post.id);

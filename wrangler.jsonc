@@ -1,0 +1,14 @@
+{
+  "name": "portfolio",
+  "compatibility_date": "2026-08-14",
+  "workers_dev": false,
+  "main": "./dist/_worker.js/index.js",
+  "routes": [
+    { "pattern": "chinmay.fyi", "custom_domain": true },
+    { "pattern": "www.chinmay.fyi", "custom_domain": true }
+  ],
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS"
+  }
+}

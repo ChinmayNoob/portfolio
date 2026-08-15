@@ -1,19 +1,19 @@
 import type { SiteConfig } from '~/cfg-schema';
 
 const config: SiteConfig = {
-  siteUrl: 'https://chinmxyblog.vercel.app/',
+  siteUrl: 'https://chinmay.fyi/',
   title: 'Chinmay Sawant',
   titleTemplate: '%s',
   description: 'My personal blog about software development, AI, and other topics.',
   favicon: '/favicon.svg',
-  ogImage: '/image.png',
+  ogImage: '/image.webp',
   // analytics: {
   //   provider: 'umami',
   //   websiteId: 'your-umami-website-id',
   // },
   bio: {
     name: 'chinmay sawant',
-    avatar: '/chinmay.png',
+    avatar: '/chinmay.webp',
     description: 'software engineer writing about distributed systems, algorithms,AI, and modern React development.',
     links: [
       {

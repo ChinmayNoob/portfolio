@@ -1,7 +1,7 @@
 import mdx from '@astrojs/mdx';
 import react from '@astrojs/react';
 import sitemap from '@astrojs/sitemap';
-import vercel from '@astrojs/vercel';
+import cloudflare from '@astrojs/cloudflare';
 import {
   transformerMetaHighlight,
   transformerMetaWordHighlight,
@@ -25,8 +25,10 @@ import { cfg } from './src/cfg';
 // https://astro.build/config
 export default defineConfig({
   site: cfg.siteUrl,
-  output: 'server',
-  adapter: vercel(),
+  output: 'static',
+  adapter: cloudflare({
+    imageService: 'passthrough',
+  }),
   vite: {
     plugins: [tailwindcss()],
   },

@@ -2,15 +2,15 @@
 import PageLayout from '~/components/layout/page-layout.astro';
 import { getCollection } from 'astro:content';
 
-const id = Astro.params.id;
-const pages = await getCollection('pages');
-const page = pages.find(
-  (entry) => entry.slug === id || entry.slug === `${id}/index`,
-);
-
-if (!page) {
-  return new Response(null, { status: 404, statusText: 'Not Found' });
+export async function getStaticPaths() {
+  const pages = await getCollection('pages');
+  return pages.map((page) => ({
+    params: { id: page.slug.replace(/\/index$/, '') },
+    props: { page },
+  }));
 }
+
+const { page } = Astro.props;
 ---
 
 <PageLayout page={page} />
