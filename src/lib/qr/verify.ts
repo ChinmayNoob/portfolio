@@ -1,6 +1,5 @@
 import jsQR from 'jsqr';
 import sharp from 'sharp';
-import { QR_SPAN } from './render';
 
 /**
  * Pixels per module when the code is rasterised for verification.
@@ -44,8 +43,9 @@ export async function assertScannable(
   svg: string,
   expected: string,
   label: string,
+  span: number,
 ): Promise<void> {
-  const px = QR_SPAN * PX_PER_MODULE;
+  const px = span * PX_PER_MODULE;
   const flattened = svg.replace(
     /var\((--[a-z0-9-]+)\)/gi,
     (whole, token: string) => PALETTE[token] ?? whole,

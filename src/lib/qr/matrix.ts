@@ -39,22 +39,36 @@ export type QrMatrix = {
   isReserved(x: number, y: number): boolean;
 };
 
-export function toMatrix(url: string): QrMatrix {
+export type MatrixOptions = {
+  /**
+   * Pinned version, or null to let the encoder pick the smallest that fits.
+   *
+   * Pinning matters when several codes sit side by side and must share a grid.
+   * A lone code — the printable card, say — has nothing to match, so auto is
+   * right there: it keeps the grid as coarse as the payload allows.
+   */
+  version?: number | null;
+};
+
+export function toMatrix(
+  url: string,
+  { version = QR_VERSION }: MatrixOptions = {},
+): QrMatrix {
   let qr: ReturnType<typeof QRCode.create>;
   try {
     qr = QRCode.create(url, {
       errorCorrectionLevel: QR_ECC,
-      version: QR_VERSION,
+      ...(version === null ? {} : { version }),
     });
   } catch (cause) {
     // Bumping the version silently would break the visual consistency the
     // pin exists to guarantee, so fail loudly instead.
     const needed = QRCode.create(url, { errorCorrectionLevel: QR_ECC }).version;
     throw new Error(
-      `QR payload does not fit the pinned version v${QR_VERSION} at ECC ${QR_ECC}: ` +
-        `"${url}" (${url.length} chars) needs v${needed}. ` +
-        `Either shorten the URL or raise QR_VERSION in src/lib/qr/matrix.ts ` +
-        `(which changes the grid size of every card).`,
+      `QR payload does not fit version v${version} at ECC ${QR_ECC}: ` +
+        `${url.length} chars needs v${needed}. Either shorten the payload or ` +
+        `raise the pinned version (which changes the grid of every code ` +
+        `sharing that pin).`,
       { cause },
     );
   }

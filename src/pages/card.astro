@@ -1,0 +1,129 @@
+---
+import '~/styles/card.css';
+import '~/styles/qr.css';
+
+import BaseLayout from '~/components/layout/base-layout.astro';
+import { cfg } from '~/cfg';
+import { CARD_ROLE, buildVcard, cardLines, cardName } from '~/data/vcard';
+import { renderQrSvg } from '~/lib/qr/render';
+import { assertScannable } from '~/lib/qr/verify';
+import cardArt from '~/assets/bento/linkedin-character-light.svg?raw';
+
+export const prerender = true;
+
+const vcard = buildVcard();
+
+const { svg, span, occlusionRatio } = await renderQrSvg(vcard, {
+  art: cardArt,
+  title: `Contact card for ${cfg.bio.name}`,
+  id: 'card',
+  // A lone code has no neighbour to match, so the encoder picks the smallest
+  // version that fits. Pinning here would only ever make the grid denser.
+  version: null,
+  // The cliff for this payload sits between 44 and 46 modules; 38 keeps a
+  // margin, and the denser grid means it still fills ~62% of the code's height.
+  artHeight: 38,
+});
+
+await assertScannable(svg, vcard, 'contact card', span);
+
+const rows = cardLines();
+const grid = span - 6;
+
+// The number that decides whether a printed card actually scans. The code
+// occupies 46% of the card's content width; phone cameras want roughly 0.5mm
+// per module, which is what drove that share.
+const CARD_MM = 85.6;
+const PAD_FRACTION = 0.05;
+const GAP_FRACTION = 0.04;
+const CODE_FRACTION = 0.46;
+const contentMm = CARD_MM * (1 - PAD_FRACTION * 2);
+const codeMm = (contentMm - CARD_MM * GAP_FRACTION) * CODE_FRACTION;
+const mmPerModule = codeMm / span;
+---
+
+<BaseLayout
+  seo={{
+    title: 'Card',
+    description:
+      'A printable contact card. Scanning the code saves the contact directly, no network needed.',
+  }}
+>
+  <script is:inline>
+    document.documentElement.classList.add('qr-anim');
+  </script>
+
+  <article class="prose-index card-page">
+    <section class="flow mt-10" style="--flow-space: 1.5rem">
+      <div class="card-intro flow" style="--flow-space: 0.9rem">
+        <h1
+          class="font-editorial text-[clamp(2rem,5vw,3.1rem)] leading-[1.05] tracking-[-0.02em]"
+        >
+          Card
+        </h1>
+        <p>
+          Scanning this saves the contact straight to a phone. The code carries
+          the whole record, not a link to one, so it keeps working with no
+          network and outlives wherever this site happens to live.
+        </p>
+        <div class="card-actions not-prose">
+          <a href="/card.vcf" download>Download .vcf</a>
+          <span aria-hidden="true">·</span>
+          <button type="button" data-print>Print</button>
+        </div>
+      </div>
+
+      <div class="card-stage not-prose">
+        <div class="card-sheet qr-host">
+          <div class="card-inner">
+            <span class="card-code" set:html={svg} />
+            <div class="card-body">
+              <p class="card-name font-editorial">{cardName()}</p>
+              <p class="card-role">{CARD_ROLE}</p>
+              <dl class="card-rows">
+                {
+                  rows.map((row) => (
+                    <div class="card-row">
+                      <dt>{row.label}</dt>
+                      <dd>{row.value}</dd>
+                    </div>
+                  ))
+                }
+              </dl>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <p class="card-intro text-sm opacity-60">
+        {grid}&times;{grid} modules, {(occlusionRatio * 100).toFixed(1)}% of the
+        symbol given over to the drawing. Printed at 85.6&times;54mm that is{
+          ' '
+        }
+        {codeMm.toFixed(0)}mm of code, or {mmPerModule.toFixed(2)}mm per module
+        &mdash; above the ~0.5mm a phone camera wants. Printing produces an
+        exact 85.6&times;54mm page, so a PDF needs no cropping.
+      </p>
+    </section>
+  </article>
+
+  <script>
+    document
+      .querySelector<HTMLButtonElement>('[data-print]')
+      ?.addEventListener('click', () => window.print());
+
+    // The card is a single code, so it gets the sweep on load rather than
+    // waiting to be scrolled into view.
+    function armCard() {
+      document
+        .querySelectorAll<HTMLElement>('.card-sheet')
+        .forEach((el) => el.classList.add('is-settled'));
+      document.documentElement.classList.add('qr-anim');
+    }
+
+    requestAnimationFrame(armCard);
+    document.addEventListener('astro:page-load', () =>
+      requestAnimationFrame(armCard),
+    );
+  </script>
+</BaseLayout>

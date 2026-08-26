@@ -269,6 +269,74 @@ Nothing reaches the browser except markup and CSS.
 - With JavaScript disabled, the page renders four still, scannable codes.
 - `pnpm build` (which runs `astro check`) passes.
 
+## The printable card (/card)
+
+A second consumer of the same engine, and the case where a QR genuinely beats a
+hyperlink: a standard 85.6 x 54mm business card.
+
+**The code carries the whole vCard, not a link to one.** A printed card outlives
+its hosting, so a card already in someone's wallet keeps working with no network
+and no live domain. The cost is a denser symbol, which was measured rather than
+assumed:
+
+| payload                | version | grid  | a 22-module figure |
+| ---------------------- | ------- | ----- | ------------------ |
+| URL to a hosted `.vcf` | v5      | 37x37 | 59% of height      |
+| vCard encoded directly | v11     | 61x61 | 34% of height      |
+
+The denser grid is partly self-correcting: the same figure occludes a smaller
+fraction of a bigger symbol, which frees error-correction headroom to spend on
+enlarging the artwork again. The cliff for this payload sits between 44 and 46
+modules, so the figure ships at 38 and still fills ~62% of the code's height.
+
+The payload is kept lean for the same reason, and `src/data/vcard.ts` is the
+single source for it: `/card.vcf` serves the identical string the code encodes,
+so the page has a click-to-save path on desktop where scanning is awkward.
+
+**Physical module size is the real constraint, not looks.** At 85.6mm wide with
+the code taking 38% of the content width, modules came out ~0.40mm, under the
+~0.5mm phone cameras want. The code's share was raised to 46% and the padding
+tightened, which puts it at 0.53mm. That number is printed on the page itself so
+it cannot silently regress.
+
+For print the palette switches to white stock and black ink. On screen the paper
+is warm to match the site; on paper, maximum contrast is what makes a small code
+scan, and a cream flood fill would waste ink for nothing.
+
+### Two print traps
+
+**The hidden start state would print blank.** The sweep's start state hides the
+modules until a script marks the code settled. Printing before that script ran
+would put the hidden state on paper and emit an empty panel. `qr.css` therefore
+forces the finished code under `@media print` regardless of animation state:
+paper has no such thing as "not yet revealed".
+
+**The card printed across three pages.** With an `@page` box only 85.6 x 54mm,
+any leftover margin, padding or min-height anywhere in the ancestor chain
+overflows onto further pages, and the layout has several wrappers each
+contributing one. Zeroing each box individually is whack-a-mole; instead the
+chain from `.page-shell` down to `.card-stage` is collapsed with
+`display: contents` in print, so those elements stop generating boxes at all and
+their margins go with them. Only `.card-sheet` is left producing a box, directly
+in body's flow. Verified at one page both with `@page` honoured and when forced
+onto A4.
+
+### A container-query trap worth remembering
+
+`.card-sheet` declares `container-type: inline-size` and the card's type sizes
+are in `cqw`, so one set of values serves both the screen and the exact physical
+size. But **an element cannot query itself**: `container-type` establishes a
+container for descendants only. `cqw` used on `.card-sheet`'s own padding and gap
+resolved against the viewport instead, making the padding 55px rather than 24px
+and throwing the sheet well off its 85.6:54 ratio. Hence `.card-inner`: every
+`cqw` value lives on a descendant.
+
+A related trap in the same layout: the site sets a **fixed px** line-height,
+which is inherited into the card and made every row 28px tall regardless of its
+`cqw` font size. Unitless line-heights scale; px ones do not.
+
+Neither page is linked from the nav, by choice.
+
 ## Revised during implementation
 
 Everything below changed because a measurement contradicted the design, not
@@ -325,9 +393,15 @@ so `art.ts` now checks for it and raises a message naming the real cause.
   and confirming the settled state leaves no running animations and a beam at
   `opacity: 0`. The reduced-motion and no-JS paths were verified by reading the
   CSS and the built markup, not exercised in a browser.
-- `/contact` is unlinked from the nav by choice, so it is discoverable only by
-  URL. Worth linking from somewhere (the bento grid, the footer) if that is not
-  the intent.
+- `/contact` and `/card` are both unlinked from the nav by choice, so they are
+  discoverable only by URL. Worth linking from somewhere (the bento grid, the
+  footer) if that is not the intent.
+- The card has not been printed on paper or scanned from paper. Its geometry,
+  single-page output and 0.53mm module size are all computed and verified in a
+  browser, which is not the same as a scan off a real print.
+- `site.config.ts` now points at `https://chinmay.fyi/`, which changes canonical
+  URLs, the sitemap, RSS and OG for the WHOLE site, not just these pages. That
+  is correct only once the domain is live.
 - `pnpm build` fails at the very end in `@astrojs/vercel`'s `astro:build:done`
   hook with `EPERM ... symlink`, because Windows blocks symlink creation without
   elevation. Reproduced with these changes stashed, so it is pre-existing and

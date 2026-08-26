@@ -19,7 +19,7 @@ const cards = await Promise.all(
   cfg.bio.links.map(async ({ label, url }) => {
     const art = CONTACT_ART[label];
 
-    const { svg } = await renderQrSvg(url, {
+    const { svg, span } = await renderQrSvg(url, {
       // A link configured in site.config.ts with no matching figure still gets
       // a card, just a plain code. Adding a fifth social must not break the
       // build for want of artwork.
@@ -31,7 +31,7 @@ const cards = await Promise.all(
 
     // Proves the code decodes back to its own URL. A code that cannot be
     // scanned fails the build rather than shipping quietly.
-    await assertScannable(svg, url, art?.display ?? label);
+    await assertScannable(svg, url, art?.display ?? label, span);
 
     return {
       href: url,

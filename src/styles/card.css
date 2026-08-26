@@ -1,0 +1,215 @@
+/* ================================================== */
+/* printable contact card                              */
+/* ================================================== */
+/*
+ * A standard business card, 85.6 x 54mm.
+ *
+ * The card sizes itself off --card-w and expresses everything inside it in
+ * container query units, so the same markup renders legibly on screen and at
+ * exact physical size in print without a second set of type sizes.
+ */
+
+.card-sheet {
+  --card-w: min(30rem, 100%);
+
+  /*
+   * container-type makes this a container for its DESCENDANTS, not for itself.
+   * An element cannot query its own size, so cqw used on .card-sheet's own
+   * properties resolves against the viewport instead -- which silently made the
+   * padding 55px rather than 24px and threw the sheet off its ratio. Hence the
+   * inner wrapper: every cqw-based value lives on a descendant.
+   */
+  container-type: inline-size;
+  width: var(--card-w);
+  aspect-ratio: 85.6 / 54;
+  overflow: hidden;
+
+  /* Fixed, not themed: this is a physical object, and the code inside it must
+   * stay dark-on-light whatever the viewer's theme is. */
+  background: #faf4ed;
+  color: #2a231b;
+  /*
+   * The site sets a FIXED line-height in px, which would be inherited here and
+   * make every row 28px tall no matter how small the font size is -- enough on
+   * its own to push the sheet off ratio. A unitless value scales instead.
+   */
+  line-height: 1.35;
+  border-radius: 0.75rem;
+  box-shadow: 0 1.4rem 2.6rem -1.2rem rgb(0 0 0 / 55%);
+
+  /* the embedded figure, authored against the bento palette */
+  --qr-paper: #faf4ed;
+  --qr-ink: #2a231b;
+  --qr-tint: #6f6354;
+  --accent-l0: #faf4ed;
+  --accent-l1: #ede7df;
+  --background-l0: #faf4ed;
+  --background-l3: #d4cdc5;
+  --background-l6: #aea79e;
+  --foreground-l2: #483f35;
+}
+
+.card-inner {
+  height: 100%;
+  display: grid;
+  /*
+   * The code's share is driven by physical scannability, not by looks. On an
+   * 85.6mm card this symbol is 67 modules across including its quiet zone, so
+   * at 38% the modules came out ~0.40mm -- under the ~0.5mm that phone cameras
+   * want. 46% with tighter padding puts them near 0.53mm.
+   */
+  grid-template-columns: 46% 1fr;
+  align-items: center;
+  gap: 4cqw;
+  padding: 5cqw;
+  box-sizing: border-box;
+}
+
+.card-code {
+  display: block;
+  width: 100%;
+}
+
+.card-code .qr {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1cqw;
+  min-width: 0;
+}
+
+.card-name {
+  font-size: 8cqw;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.card-role {
+  font-size: 3.1cqw;
+  line-height: 1.3;
+  color: #6f6354;
+  margin: 0 0 2cqw;
+}
+
+.card-rows {
+  display: grid;
+  gap: 1.1cqw;
+  margin: 0;
+  font-size: 2.7cqw;
+  line-height: 1.35;
+}
+
+.card-row {
+  display: flex;
+  gap: 1.3cqw;
+  align-items: baseline;
+  min-width: 0;
+}
+
+.card-row dt {
+  flex: 0 0 auto;
+  width: 9.5cqw;
+  color: #8a8279;
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.06em;
+}
+
+.card-row dd {
+  margin: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* screen-only surroundings */
+.card-stage {
+  display: flex;
+  justify-content: center;
+  padding: 1rem 0 0;
+}
+
+.card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+/* ================================================== */
+/* print                                               */
+/* ================================================== */
+/*
+ * The page IS the card: an exact 85.6 x 54mm sheet with no margin, so printing
+ * to PDF produces a card-sized file a print shop can use directly, with nothing
+ * to crop.
+ */
+@page {
+  size: 85.6mm 54mm;
+  margin: 0;
+}
+
+@media print {
+  /*
+   * The @page box is only 85.6 x 54mm, so ANY leftover margin, padding or
+   * min-height anywhere in the ancestor chain overflows onto extra pages. The
+   * card was printing across three of them.
+   *
+   * Rather than try to zero each wrapper's box, the layout chain is collapsed
+   * with display: contents, so those elements stop generating boxes at all and
+   * their margins go with them. Only .card-sheet is left producing a box, as a
+   * direct participant in body's flow, which is what guarantees a single page.
+   */
+  html,
+  body {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: auto !important;
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+    background: #fff !important;
+  }
+
+  .blur-layer,
+  .mobile-nav-wrapper,
+  .page-nav-rail,
+  .site-footer,
+  .card-intro,
+  .card-actions {
+    display: none !important;
+  }
+
+  .page-shell,
+  .page-main,
+  .card-page,
+  .card-page > section,
+  .card-stage {
+    display: contents !important;
+  }
+
+  .card-sheet {
+    --card-w: 85.6mm;
+
+    /*
+     * Maximum contrast for the scanner, and no flood of cream ink across the
+     * whole card. On screen the paper is warm to match the site; on paper,
+     * white stock and black ink is what makes a small code scan reliably.
+     */
+    background: #fff;
+    --qr-paper: #fff;
+    --qr-ink: #000;
+    --qr-tint: #4a4a4a;
+    --background-l0: #fff;
+
+    margin: 0 !important;
+    border-radius: 0;
+    box-shadow: none;
+    break-inside: avoid;
+    break-after: avoid;
+  }
+}

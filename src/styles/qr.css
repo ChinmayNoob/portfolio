@@ -96,6 +96,10 @@
  * staggered an animation onto every individual module instead, which meant
  * ~2900 simultaneous animations on this page and could leave the panels blank.
  *
+ * The state selectors key off .qr-host rather than any one page's card class,
+ * so anything that embeds a code (the contact grid, the printable card) gets the
+ * same behaviour.
+ *
  * The finished, still code is the DEFAULT state, so no-JS renders a scannable
  * card. An inline script adds .qr-anim to <html> before first paint, and that
  * class is the only thing that opts a visitor into the hidden start state —
@@ -118,43 +122,43 @@
 }
 
 /* start state */
-.qr-anim .qr-card:not(.is-settled) .qr-sweep {
+.qr-anim .qr-host:not(.is-settled) .qr-sweep {
   clip-path: inset(0 0 100% 0);
 }
 
-.qr-anim .qr-card:not(.is-settled) .qr-finder {
+.qr-anim .qr-host:not(.is-settled) .qr-finder {
   opacity: 0;
   transform: scale(0.4);
 }
 
-.qr-anim .qr-card:not(.is-settled) .qr-beam {
+.qr-anim .qr-host:not(.is-settled) .qr-beam {
   opacity: 0;
 }
 
 /* played once, when the card first scrolls into view */
-.qr-anim .qr-card.is-settled .qr-sweep {
+.qr-anim .qr-host.is-settled .qr-sweep {
   animation: qr-sweep 900ms cubic-bezier(0.35, 0, 0.25, 1) backwards;
 }
 
-.qr-anim .qr-card.is-settled .qr-beam {
+.qr-anim .qr-host.is-settled .qr-beam {
   animation: qr-beam 900ms cubic-bezier(0.35, 0, 0.25, 1) backwards;
 }
 
 /* overshoot easing: the finders land with a snap rather than a fade */
-.qr-anim .qr-card.is-settled .qr-finder {
+.qr-anim .qr-host.is-settled .qr-finder {
   animation: qr-finder 340ms cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
 }
 
 /* corner by corner, so it reads as acquiring the code rather than a pop */
-.qr-anim .qr-card.is-settled .qr-finder[data-corner='tl'] {
+.qr-anim .qr-host.is-settled .qr-finder[data-corner='tl'] {
   animation-delay: 760ms;
 }
 
-.qr-anim .qr-card.is-settled .qr-finder[data-corner='tr'] {
+.qr-anim .qr-host.is-settled .qr-finder[data-corner='tr'] {
   animation-delay: 830ms;
 }
 
-.qr-anim .qr-card.is-settled .qr-finder[data-corner='bl'] {
+.qr-anim .qr-host.is-settled .qr-finder[data-corner='bl'] {
   animation-delay: 900ms;
 }
 
@@ -198,25 +202,51 @@
 }
 
 /*
+ * Print must ALWAYS show the finished code, whatever the animation state.
+ *
+ * Without this, printing before the script has marked a code settled would
+ * carry the hidden start state onto paper and emit a blank panel — the sweep is
+ * a screen affordance, and paper has no such thing as "not yet revealed".
+ */
+@media print {
+  .qr-anim .qr-host:not(.is-settled) .qr-sweep,
+  .qr-anim .qr-host.is-settled .qr-sweep {
+    clip-path: none !important;
+    animation: none !important;
+  }
+
+  .qr-anim .qr-host:not(.is-settled) .qr-finder,
+  .qr-anim .qr-host.is-settled .qr-finder {
+    opacity: 1 !important;
+    transform: none !important;
+    animation: none !important;
+  }
+
+  .qr-beam {
+    display: none !important;
+  }
+}
+
+/*
  * Reduced motion gets the same finished code as no-JS: the start state is
  * cancelled outright rather than merely shortened, and the beam never shows.
  */
 @media (prefers-reduced-motion: reduce) {
-  .qr-anim .qr-card:not(.is-settled) .qr-sweep,
-  .qr-anim .qr-card.is-settled .qr-sweep {
+  .qr-anim .qr-host:not(.is-settled) .qr-sweep,
+  .qr-anim .qr-host.is-settled .qr-sweep {
     clip-path: none;
     animation: none;
   }
 
-  .qr-anim .qr-card:not(.is-settled) .qr-finder,
-  .qr-anim .qr-card.is-settled .qr-finder {
+  .qr-anim .qr-host:not(.is-settled) .qr-finder,
+  .qr-anim .qr-host.is-settled .qr-finder {
     opacity: 1;
     transform: none;
     animation: none;
   }
 
-  .qr-anim .qr-card:not(.is-settled) .qr-beam,
-  .qr-anim .qr-card.is-settled .qr-beam {
+  .qr-anim .qr-host:not(.is-settled) .qr-beam,
+  .qr-anim .qr-host.is-settled .qr-beam {
     opacity: 0;
     animation: none;
   }

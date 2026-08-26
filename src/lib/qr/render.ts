@@ -1,5 +1,5 @@
 import { artInnerMarkup, artMask } from './art';
-import { QR_QUIET, QR_SIZE, toMatrix } from './matrix';
+import { QR_QUIET, toMatrix } from './matrix';
 
 /**
  * Coverage at or above this removes the module outright, letting the artwork
@@ -47,6 +47,11 @@ export type QrSvgOptions = {
   id: string;
   /** Height of the artwork in modules; defaults to {@link ART_HEIGHT}. */
   artHeight?: number;
+  /**
+   * Pinned QR version, or null to let the encoder pick. Defaults to the pin the
+   * contact grid shares so its four codes render an identical grid.
+   */
+  version?: number | null;
 };
 
 export type QrSvgResult = {
@@ -55,13 +60,21 @@ export type QrSvgResult = {
   occlusionRatio: number;
   /** Total time to fully settle, in ms. */
   settleMs: number;
+  /** Modules per side including the quiet zone; the verifier needs it. */
+  span: number;
 };
 
 export async function renderQrSvg(
   url: string,
-  { art: artSource = null, title, id, artHeight = ART_HEIGHT }: QrSvgOptions,
+  {
+    art: artSource = null,
+    title,
+    id,
+    artHeight = ART_HEIGHT,
+    version,
+  }: QrSvgOptions,
 ): Promise<QrSvgResult> {
-  const matrix = toMatrix(url);
+  const matrix = toMatrix(url, version === undefined ? {} : { version });
   const { size } = matrix;
 
   const mask =
@@ -163,6 +176,7 @@ export async function renderQrSvg(
     svg,
     occlusionRatio,
     settleMs: SWEEP_MS + FINDER_MS,
+    span,
   };
 }
 
@@ -182,9 +196,6 @@ function finderCorner(
   if (x < near && y >= size - near) return 'bl';
   return null;
 }
-
-/** Modules per side, including the quiet zone. Exported for the verifier. */
-export const QR_SPAN = QR_SIZE + QR_QUIET * 2;
 
 const fmt = (n: number) => Number(n.toFixed(3)).toString();
 
