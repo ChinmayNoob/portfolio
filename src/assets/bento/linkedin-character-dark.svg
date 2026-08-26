@@ -1,0 +1,28 @@
+<svg width="304" height="304" viewBox="0 0 304 304" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g transform="translate(0 -11) rotate(-4 152 163)">
+  <!-- no outline pass: the cream silhouette already separates from a dark ground -->
+  <path d="M96 264L104 198C106 182 122 170 152 170C182 170 198 182 200 198L208 264Z" fill="var(--accent-l1)"/>
+  <circle cx="152" cy="116" r="54" fill="var(--accent-l0)"/>
+
+  <!-- face -->
+  <circle cx="134" cy="110" r="3.9" fill="var(--background-l3)"/>
+  <circle cx="168" cy="106" r="3.9" fill="var(--background-l3)"/>
+  <path d="M145.5 124H158.5V130.5C158.5 135 155.6 138.5 152 138.5C148.4 138.5 145.5 135 145.5 130.5Z" stroke="var(--background-l3)" stroke-width="2" stroke-linejoin="round"/>
+
+  <!-- lanyard -->
+  <g stroke="var(--background-l6)" stroke-width="5" stroke-linecap="round">
+    <path d="M124 178L150 206"/>
+    <path d="M181 177L155 206"/>
+  </g>
+  <rect x="146.5" y="205" width="11" height="9" rx="2.5" fill="var(--background-l6)"/>
+
+  <!-- badge -->
+  <rect x="127" y="212" width="50" height="34" rx="5" fill="var(--background-l0)" stroke="var(--background-l6)" stroke-width="2"/>
+  <circle cx="141" cy="219" r="2.8" fill="var(--foreground-l2)"/>
+  <g stroke="var(--foreground-l2)" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M141 239V226"/>
+    <path d="M152 239V226"/>
+    <path d="M152 231C152 227.5 154.5 225.5 157.5 225.5C160.5 225.5 163 227.5 163 231V239"/>
+  </g>
+</g>
+</svg>

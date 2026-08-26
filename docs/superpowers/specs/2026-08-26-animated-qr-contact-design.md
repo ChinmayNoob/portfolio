@@ -34,12 +34,27 @@ them.
 |------------|----------|--------------------------|--------------------------------|
 | `github`   | GitHub   | `@chinmaynoob`           | `i-foreground` (laptop + code) |
 | `x`        | X        | `@Chinmay0408`           | `k-foreground` (birds)         |
-| `linkedin` | LinkedIn | `chinmay-sawant0408`     | `b-foreground` (scarf)         |
+| `linkedin` | LinkedIn | `chinmay-sawant0408`     | `linkedin-character` (lanyard + `in` badge) |
 | `mail`     | Email    | `chinmaypvt04@gmail.com` | `a-foreground` (plain)         |
 
 Each entry resolves the dark and light variant of its art SVG, matching the
 existing `data-theme-dark` / `data-theme-light` convention used across the
 bento tiles.
+
+`linkedin-character-{light,dark}.svg` is new art authored for this work, since
+none of the existing tiles carried anything that read as LinkedIn. It follows
+the established conventions: `--accent-l0` head, `--accent-l1` shirt, features
+in `--foreground-l2` (light) / `--background-l3` (dark), prop in
+`--background-l6`, a -4 degree tilt, and a 304 viewBox. The badge is
+`--background-l0` filled with `--foreground-l2` glyphs, so it inverts per theme
+on its own. The `in` glyphs are stroked geometry rather than `<text>`, so there
+is no font dependency.
+
+Its light variant gets its outline differently from the Figma-exported tiles.
+Those use a generated mask plus a precomputed union path; this one strokes each
+silhouette shape at double width and repaints it fill-only underneath, so the
+inner half of the stroke is covered and only a clean outer contour survives.
+Visually equivalent, hand-maintainable, and no seam at the head/shoulder join.
 
 A link present in `cfg.bio.links` but absent from this map renders as a card
 with a QR and no embedded art. It must not fail the build. This keeps adding a
