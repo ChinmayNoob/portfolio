@@ -80,10 +80,10 @@ A link present in `cfg.bio.links` but absent from this map renders as a card
 with a QR and no embedded art. It must not fail the build. This keeps adding a
 fifth social a one-line change.
 
-`/contact` is added to the `navItems` array in both
-`src/components/layout/base-nav.astro` and
-`src/components/layout/mobile-nav.astro`. These two files each hold their own
-copy of that array; unifying them is out of scope for this work.
+`/contact` is deliberately NOT in the nav. It is reachable by URL and by direct
+link only, so the nav stays at its five entries. On mobile the breadcrumb still
+reads "Home / Contact": with no matching entry in `mobileNavItems` the crumb
+falls through to `pageTitle`, which the page sets via its SEO title.
 
 ## QR pipeline
 
@@ -325,6 +325,9 @@ so `art.ts` now checks for it and raises a message naming the real cause.
   and confirming the settled state leaves no running animations and a beam at
   `opacity: 0`. The reduced-motion and no-JS paths were verified by reading the
   CSS and the built markup, not exercised in a browser.
+- `/contact` is unlinked from the nav by choice, so it is discoverable only by
+  URL. Worth linking from somewhere (the bento grid, the footer) if that is not
+  the intent.
 - `pnpm build` fails at the very end in `@astrojs/vercel`'s `astro:build:done`
   hook with `EPERM ... symlink`, because Windows blocks symlink creation without
   elevation. Reproduced with these changes stashed, so it is pre-existing and
