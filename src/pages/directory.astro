@@ -2,7 +2,10 @@
 import BaseLayout from '~/components/layout/base-layout.astro';
 import { getCollection } from 'astro:content';
 
-const pageFiles = import.meta.glob('./**/*.astro', { eager: true });
+// Not eager: this only needs the file paths (the keys), and eagerly
+// importing every page would execute their server-side code too — including
+// guestbook.astro's DB client, which throws without ASTRO_DB_REMOTE_URL set.
+const pageFiles = import.meta.glob('./**/*.astro');
 
 const staticPages = Object.keys(pageFiles)
   .map((filePath) => {
