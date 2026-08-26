@@ -41,6 +41,8 @@ export async function artMask(
 ): Promise<ArtMask> {
   const flattened = source.replace(/var\(--[a-z0-9-]+\)/gi, '#000');
 
+  assertNoDoubleHyphenComment(source);
+
   const { data, info } = await sharp(Buffer.from(flattened))
     .resize({ width: PROBE_PX, height: PROBE_PX, fit: 'inside' })
     .ensureAlpha()
@@ -123,6 +125,24 @@ export async function artMask(
       return coverage[my * rect.w + mx];
     },
   };
+}
+
+/**
+ * XML forbids a double hyphen inside a comment, and the artwork is full of
+ * palette token names that start with one. The rasteriser's own message for
+ * this is a generic "corrupt header", which is a slow thing to diagnose twice,
+ * so the specific cause is named here instead.
+ */
+function assertNoDoubleHyphenComment(source: string): void {
+  for (const match of source.matchAll(/<!--([\s\S]*?)-->/g)) {
+    if (match[1].includes('--')) {
+      throw new Error(
+        'Artwork has a double hyphen inside an XML comment, which makes the ' +
+          'file unparseable. Describe palette tokens in prose instead of ' +
+          `writing them literally. Offending comment: ${match[0].slice(0, 80)}`,
+      );
+    }
+  }
 }
 
 /** Longest side of the source viewBox, in user units. */

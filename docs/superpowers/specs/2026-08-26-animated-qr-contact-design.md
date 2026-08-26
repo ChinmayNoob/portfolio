@@ -30,19 +30,30 @@ them.
 
 `src/data/contact.ts` maps each link `label` to its presentation:
 
-| label      | display  | handle                   | art embedded                         |
-| ---------- | -------- | ------------------------ | ------------------------------------ |
-| `github`   | GitHub   | `@chinmaynoob`           | `github-character` (laptop, `>_`)    |
-| `x`        | X        | `@Chinmay0408`           | `x-character` (speech bubble, `X`)   |
-| `linkedin` | LinkedIn | `chinmay-sawant0408`     | `linkedin-character` (lanyard badge) |
-| `mail`     | Email    | `chinmaypvt04@gmail.com` | `mail-character` (envelope)          |
+| label      | display  | handle                   | art embedded                          |
+| ---------- | -------- | ------------------------ | ------------------------------------- |
+| `github`   | GitHub   | `@chinmaynoob`           | `github-character` (dizzy, laptop)    |
+| `x`        | X        | `@Chinmay0408`           | `x-character` (annoyed, phone, birds) |
+| `linkedin` | LinkedIn | `chinmay-sawant0408`     | `linkedin-character` (lanyard badge)  |
+| `mail`     | Email    | `chinmaypvt04@gmail.com` | `mail-character` (envelope)           |
 
 Handles are not stored. They are derived from the configured URL (last path
 segment, or the address after `mailto:`), so config and display cannot drift.
 
-All four figures are purpose-built for this page rather than reused from the
-bento grid. The measurements that forced that are in "Revised during
-implementation" at the end.
+All four figures are purpose-built for this page, but they are **redrawn from**
+the bento originals rather than invented: `github-character` keeps
+`i-foreground`'s dizzy spiral eyes, squiggle mouth and hunch over the laptop;
+`x-character` keeps `k-foreground`'s hard brows, ring eye, anger marks, raised
+phone and pair of birds; `mail-character` keeps `a-foreground`'s dot eyes and
+small open mouth. What changed is that every large dark mass (the laptop, the
+phone) became a light fill with dark linework. The measurements that forced that
+are in "Revised during implementation" at the end.
+
+Head radius, tilt, posture and expression differ per figure — a hunch for
+GitHub, a lean and anger marks for X, the most upright and symmetric posture for
+LinkedIn, the smallest head and widest lean for Email. An earlier pass shared
+one base figure and only swapped the prop, which read as a single avatar in four
+costumes.
 
 The four figures are new art authored for this work. They follow the
 established bento conventions: `--accent-l0` head, `--accent-l1` shirt, features
@@ -184,36 +195,34 @@ Cost: one devDependency (`jsqr`) and a few hundred milliseconds of build time.
 
 ## Animation
 
-A single `@keyframes` rule in `src/styles/qr.css`.
+A scanner sweep. A beam travels down the panel, modules materialise as it
+passes, and then the three finder patterns snap in corner by corner, like a
+reader locking onto the code.
 
-Each rect carries `style="--i: n"`, where `n` is its **Chebyshev distance from
-the nearest of the three finder corners**, computed at build time. The delay is
-`calc(var(--i) * 15ms)`. The furthest module from any finder is 37 rings out,
-not the ~20 first estimated — the far corner is diagonally distant from all
-three. That is ~555ms of stagger plus a 260ms per-module scale-and-fade, about
-815ms in total. The code then sits completely still.
+The mechanism matters as much as the look. The reveal is **one** animated
+`clip-path` on a single group wrapping the artwork and all the data modules,
+animating `inset(0 0 100% 0)` to `inset(0 0 0 0)`. Add the travelling beam and
+the three finder groups and that is **five animated elements per card**.
 
-The nearest-finder metric is the point: the code grows out of its three
-structural anchors instead of fading in as an undifferentiated blob. Stillness
-after settling is equally deliberate — a perpetually moving QR reads as cheap
-and gives scanners a moving target.
+The finder patterns are held out of the swept group and emitted separately, so
+they can arrive last. They carry overshoot easing and staggered delays (760ms,
+830ms, 900ms) so the code appears to be acquired rather than to pop. The beam's
+travel distance reads `--qr-span` off the `<svg>`, which `render.ts` sets to the
+module count including the quiet zone, so the animation stays correct if the
+pinned version ever changes.
 
-Playback is triggered by a single `IntersectionObserver` that toggles one class
-on the card. Around fifteen lines of vanilla JS; GSAP is a project dependency
-but is not needed here and is not used.
+Total settle is ~1240ms.
 
-Two paths render the finished, still, scannable QR with no animation at all:
-
-- `@media (prefers-reduced-motion: reduce)`
-- no JavaScript, since the observer never runs and the class is never added
-
-Both are served by the same component. There is no separate static variant.
+The beam is parked just above the viewBox and additionally pinned to `opacity:
+0` when idle, so a future geometry change cannot leave an orange bar sitting
+across the top of a finished code.
 
 The panel itself is light in BOTH themes. Inverted codes, meaning light modules
 on a dark ground, fail on a meaningful share of scanners, and a light panel is
 what QR codes are printed on everywhere for exactly that reason. `qr.css` pins
 the handful of tokens the code and the figures need to their light values rather
-than theming them. The card around the panel is themed normally.
+than theming them. The card around the panel is themed normally. The scan beam
+is the one accent, tied to `--tomato-9`, the token the active nav link uses.
 
 The finished still code is the DEFAULT state. An inline script adds `.qr-anim`
 to the document element, and that class is the only thing that opts a visitor
@@ -221,6 +230,10 @@ into the hidden start state, so a blocked or failed script degrades to a static
 scannable code rather than to nothing. The class is set again where the observer
 arms, because an inline script is not guaranteed to re-run when `ClientRouter`
 swaps the document on a client-side navigation.
+
+Playback is triggered by a single `IntersectionObserver` toggling one class per
+card. `prefers-reduced-motion` cancels the start state outright and never shows
+the beam.
 
 ## Files
 
@@ -289,12 +302,29 @@ and for any palette duplication.
 Both give identical pass/fail results on this set, which established that the
 cliff is genuine symbol damage rather than a rasterisation artifact.
 
+**Per-module animation was replaced by a swept clip-path.** The first build gave
+every dark module its own animation with a delay derived from its distance to
+the nearest finder pattern. That is roughly 2900 simultaneous animations on this
+page. It measured fine headless but left the panels blank in a real browser, and
+the effect was a generic staggered fade anyway. The scanner sweep is both more
+interesting and about five animated elements per card. `ringIndex` in
+`matrix.ts` and the per-rect `--i` custom property both went away with it; the
+markup shrank from ~46KB to ~37KB per card as a side effect.
+
+**XML comments cannot contain a double hyphen.** Hit twice while writing the
+artwork, since every palette token name begins with one and `--` is also a
+tempting em-dash substitute. `sharp` reports only a generic "corrupt header",
+so `art.ts` now checks for it and raises a message naming the real cause.
+
 ## Known gaps
 
 - The codes have not been scanned with a physical phone camera. Each is verified
   by build-time decode, which is not the same evidence.
-- The animation, the reduced-motion path and the no-JS path were verified by
-  reading the CSS and the built markup, not in a browser.
+- The animation was verified in headless Edge by stepping the sweep frame by
+  frame, confirming the beam tracks the reveal edge and the finders land last,
+  and confirming the settled state leaves no running animations and a beam at
+  `opacity: 0`. The reduced-motion and no-JS paths were verified by reading the
+  CSS and the built markup, not exercised in a browser.
 - `pnpm build` fails at the very end in `@astrojs/vercel`'s `astro:build:done`
   hook with `EPERM ... symlink`, because Windows blocks symlink creation without
   elevation. Reproduced with these changes stashed, so it is pre-existing and

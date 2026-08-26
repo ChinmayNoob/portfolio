@@ -3,10 +3,10 @@
 /* ================================================== */
 /*
  * The code panel is deliberately light in BOTH themes. Inverted codes (light
- * modules on a dark ground) fail on a meaningful share of scanners, and a
- * light panel is what QR codes are printed on everywhere for that reason. So
- * the artwork embedded in the panel only ever needs its light values, which is
- * why the tokens below are fixed rather than themed.
+ * modules on a dark ground) fail on a meaningful share of scanners, and a light
+ * panel is what QR codes are printed on everywhere for that reason. So the
+ * artwork embedded in the panel only ever needs its light values, which is why
+ * the tokens below are fixed rather than themed.
  */
 
 .qr-card {
@@ -14,6 +14,8 @@
   --qr-paper: #faf4ed;
   --qr-ink: #332b21;
   --qr-tint: #6f6354;
+  /* scan beam, tied to the site accent used for the active nav link */
+  --qr-beam: var(--tomato-9, #e54d2e);
 
   /* the embedded figure, which is authored against the bento palette */
   --accent-l0: #faf4ed;
@@ -83,44 +85,111 @@
 }
 
 /* ================================================== */
-/* assemble-in animation                               */
+/* scanner sweep                                       */
 /* ================================================== */
 /*
+ * A beam travels down the panel; modules materialise as it passes; the three
+ * finder patterns then snap in, corner by corner, like a reader locking on.
+ *
+ * The reveal is ONE animated clip-path on a single group, plus one beam and
+ * three finder groups: five animated elements per card. An earlier version
+ * staggered an animation onto every individual module instead, which meant
+ * ~2900 simultaneous animations on this page and could leave the panels blank.
+ *
  * The finished, still code is the DEFAULT state, so no-JS renders a scannable
- * card. An inline script adds .qr-anim to <html> before first paint, which is
- * the only thing that opts a visitor into the hidden start state — meaning a
- * failed or blocked script degrades to the static code rather than to nothing.
+ * card. An inline script adds .qr-anim to <html> before first paint, and that
+ * class is the only thing that opts a visitor into the hidden start state —
+ * so a failed or blocked script degrades to the static code, not to nothing.
  */
 
-.qr rect {
+.qr-finder {
   transform-box: fill-box;
   transform-origin: center;
 }
 
-.qr-anim .qr-card:not(.is-settled) :is(.qr-ink, .qr-tint) rect {
+/*
+ * The beam is parked just above the viewBox, so it is clipped away when idle.
+ * Pinning opacity to 0 as well means a future geometry change cannot leave an
+ * orange bar sitting across the top of a finished code.
+ */
+.qr-beam {
   opacity: 0;
-  transform: scale(0.2);
+  pointer-events: none;
 }
 
-.qr-anim .qr-card:not(.is-settled) .qr-art {
+/* start state */
+.qr-anim .qr-card:not(.is-settled) .qr-sweep {
+  clip-path: inset(0 0 100% 0);
+}
+
+.qr-anim .qr-card:not(.is-settled) .qr-finder {
+  opacity: 0;
+  transform: scale(0.4);
+}
+
+.qr-anim .qr-card:not(.is-settled) .qr-beam {
   opacity: 0;
 }
 
-.qr-anim .qr-card.is-settled :is(.qr-ink, .qr-tint) rect {
-  animation: qr-module-in 260ms cubic-bezier(0.2, 0.9, 0.25, 1) backwards;
-  /* --i is the module's Chebyshev distance from the nearest finder pattern, so
-   * the code grows out of its three structural anchors. */
-  animation-delay: calc(var(--i) * 15ms);
+/* played once, when the card first scrolls into view */
+.qr-anim .qr-card.is-settled .qr-sweep {
+  animation: qr-sweep 900ms cubic-bezier(0.35, 0, 0.25, 1) backwards;
 }
 
-.qr-anim .qr-card.is-settled .qr-art {
-  animation: qr-art-in 420ms ease 260ms backwards;
+.qr-anim .qr-card.is-settled .qr-beam {
+  animation: qr-beam 900ms cubic-bezier(0.35, 0, 0.25, 1) backwards;
 }
 
-@keyframes qr-module-in {
+/* overshoot easing: the finders land with a snap rather than a fade */
+.qr-anim .qr-card.is-settled .qr-finder {
+  animation: qr-finder 340ms cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
+}
+
+/* corner by corner, so it reads as acquiring the code rather than a pop */
+.qr-anim .qr-card.is-settled .qr-finder[data-corner='tl'] {
+  animation-delay: 760ms;
+}
+
+.qr-anim .qr-card.is-settled .qr-finder[data-corner='tr'] {
+  animation-delay: 830ms;
+}
+
+.qr-anim .qr-card.is-settled .qr-finder[data-corner='bl'] {
+  animation-delay: 900ms;
+}
+
+@keyframes qr-sweep {
+  from {
+    clip-path: inset(0 0 100% 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+@keyframes qr-beam {
+  0% {
+    opacity: 0;
+    transform: translateY(0);
+  }
+  10% {
+    opacity: 1;
+  }
+  88% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    /* --qr-span is the module count including the quiet zone, set on the <svg>
+     * by render.ts, so the travel stays correct if the QR version changes. */
+    transform: translateY(calc(var(--qr-span, 47) * 1px));
+  }
+}
+
+@keyframes qr-finder {
   from {
     opacity: 0;
-    transform: scale(0.2);
+    transform: scale(0.4);
   }
   to {
     opacity: 1;
@@ -128,30 +197,27 @@
   }
 }
 
-@keyframes qr-art-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
 /*
  * Reduced motion gets the same finished code as no-JS: the start state is
- * cancelled outright rather than merely shortened.
+ * cancelled outright rather than merely shortened, and the beam never shows.
  */
 @media (prefers-reduced-motion: reduce) {
-  .qr-anim .qr-card:not(.is-settled) :is(.qr-ink, .qr-tint) rect,
-  .qr-anim .qr-card.is-settled :is(.qr-ink, .qr-tint) rect {
+  .qr-anim .qr-card:not(.is-settled) .qr-sweep,
+  .qr-anim .qr-card.is-settled .qr-sweep {
+    clip-path: none;
+    animation: none;
+  }
+
+  .qr-anim .qr-card:not(.is-settled) .qr-finder,
+  .qr-anim .qr-card.is-settled .qr-finder {
     opacity: 1;
     transform: none;
     animation: none;
   }
 
-  .qr-anim .qr-card:not(.is-settled) .qr-art,
-  .qr-anim .qr-card.is-settled .qr-art {
-    opacity: 1;
+  .qr-anim .qr-card:not(.is-settled) .qr-beam,
+  .qr-anim .qr-card.is-settled .qr-beam {
+    opacity: 0;
     animation: none;
   }
 }

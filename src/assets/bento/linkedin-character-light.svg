@@ -1,28 +1,39 @@
-<svg width="304" height="304" viewBox="0 0 304 304" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g transform="translate(0 -11) rotate(-4 152 163)">
-  <!--
-    Outline pass. Every silhouette shape is stroked at double width and then
-    repainted fill-only below, so the inner half of each stroke is covered and
-    only a clean outer contour survives. This replaces the Figma mask-outline
-    trick used by the other light-variant tiles without needing a generated
-    union path.
-  -->
-  <g stroke="var(--background-l3)" stroke-width="4">
-    <path d="M96 264L104 198C106 182 122 170 152 170C182 170 198 182 200 198L208 264Z" fill="var(--accent-l1)"/>
-    <circle cx="152" cy="116" r="54" fill="var(--accent-l0)"/>
-  </g>
-  <path d="M96 264L104 198C106 182 122 170 152 170C182 170 198 182 200 198L208 264Z" fill="var(--accent-l1)"/>
-  <circle cx="152" cy="116" r="54" fill="var(--accent-l0)"/>
+<!--
+  LinkedIn figure for the QR panel on /contact: lanyard and conference badge.
 
-  <!-- face -->
-  <circle cx="134" cy="110" r="3.9" fill="var(--foreground-l2)"/>
-  <circle cx="168" cy="106" r="3.9" fill="var(--foreground-l2)"/>
-  <path d="M145.5 124H158.5V130.5C158.5 135 155.6 138.5 152 138.5C148.4 138.5 145.5 135 145.5 130.5Z" stroke="var(--foreground-l2)" stroke-width="2" stroke-linejoin="round"/>
+  Deliberately the most upright and symmetric of the four, with the smallest
+  tilt and a closed polite smile, against the GitHub figure's hunch and the X
+  figure's lean. Head radius, tilt, posture and expression all differ per social
+  so the set does not read as one avatar in four costumes.
+
+  The badge uses the lightest background token filled with the mid foreground
+  token, and its glyphs are stroked geometry rather than <text>, so there is no
+  font dependency. Note that XML comments cannot contain a double hyphen, which
+  is why token names are described here rather than written literally.
+
+  This one has a dark pair (linkedin-character-dark.svg) because it is the only
+  figure that is also a candidate for the bento grid.
+-->
+<svg width="304" height="304" viewBox="0 0 304 304" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g transform="rotate(-3 152 172)">
+  <!-- silhouette: stroked at double width, then repainted fill-only, so only
+       the outer contour survives and there is no head/shoulder seam -->
+  <g stroke="var(--background-l3)" stroke-width="4">
+    <path d="M104 264L110 198C112 182 128 170 152 170C176 170 192 182 194 198L200 264Z" fill="var(--accent-l1)"/>
+    <circle cx="152" cy="116" r="50" fill="var(--accent-l0)"/>
+  </g>
+  <path d="M104 264L110 198C112 182 128 170 152 170C176 170 192 182 194 198L200 264Z" fill="var(--accent-l1)"/>
+  <circle cx="152" cy="116" r="50" fill="var(--accent-l0)"/>
+
+  <!-- composed face: dot eyes and a closed smile -->
+  <circle cx="137" cy="110" r="3.7" fill="var(--foreground-l2)"/>
+  <circle cx="167" cy="108" r="3.7" fill="var(--foreground-l2)"/>
+  <path d="M144 129C147 134 156 134 160 128" stroke="var(--foreground-l2)" stroke-width="2" stroke-linecap="round"/>
 
   <!-- lanyard -->
   <g stroke="var(--background-l6)" stroke-width="5" stroke-linecap="round">
-    <path d="M124 178L150 206"/>
-    <path d="M181 177L155 206"/>
+    <path d="M128 178L150 206"/>
+    <path d="M178 177L156 206"/>
   </g>
   <rect x="146.5" y="205" width="11" height="9" rx="2.5" fill="var(--background-l6)"/>
 

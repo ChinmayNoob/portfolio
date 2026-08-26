@@ -22,6 +22,8 @@ const PALETTE: Record<string, string> = {
   '--qr-paper': '#faf4ed',
   '--qr-ink': '#332b21',
   '--qr-tint': '#6f6354',
+  '--qr-beam': '#e54d2e',
+  '--tomato-9': '#e54d2e',
   '--accent-l0': '#faf4ed',
   '--accent-l1': '#ede7df',
   '--background-l0': '#faf4ed',

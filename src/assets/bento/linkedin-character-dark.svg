@@ -1,18 +1,18 @@
 <svg width="304" height="304" viewBox="0 0 304 304" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g transform="translate(0 -11) rotate(-4 152 163)">
+<g transform="rotate(-3 152 172)">
   <!-- no outline pass: the cream silhouette already separates from a dark ground -->
-  <path d="M96 264L104 198C106 182 122 170 152 170C182 170 198 182 200 198L208 264Z" fill="var(--accent-l1)"/>
-  <circle cx="152" cy="116" r="54" fill="var(--accent-l0)"/>
+  <path d="M104 264L110 198C112 182 128 170 152 170C176 170 192 182 194 198L200 264Z" fill="var(--accent-l1)"/>
+  <circle cx="152" cy="116" r="50" fill="var(--accent-l0)"/>
 
   <!-- face -->
-  <circle cx="134" cy="110" r="3.9" fill="var(--background-l3)"/>
-  <circle cx="168" cy="106" r="3.9" fill="var(--background-l3)"/>
-  <path d="M145.5 124H158.5V130.5C158.5 135 155.6 138.5 152 138.5C148.4 138.5 145.5 135 145.5 130.5Z" stroke="var(--background-l3)" stroke-width="2" stroke-linejoin="round"/>
+  <circle cx="137" cy="110" r="3.7" fill="var(--background-l3)"/>
+  <circle cx="167" cy="108" r="3.7" fill="var(--background-l3)"/>
+  <path d="M144 129C147 134 156 134 160 128" stroke="var(--background-l3)" stroke-width="2" stroke-linecap="round"/>
 
   <!-- lanyard -->
   <g stroke="var(--background-l6)" stroke-width="5" stroke-linecap="round">
-    <path d="M124 178L150 206"/>
-    <path d="M181 177L155 206"/>
+    <path d="M128 178L150 206"/>
+    <path d="M178 177L156 206"/>
   </g>
   <rect x="146.5" y="205" width="11" height="9" rx="2.5" fill="var(--background-l6)"/>
 

@@ -1,34 +1,39 @@
 <!--
-  Authored for embedding in the always-light QR panel on /contact, so there is
-  no dark pair. Add one following linkedin-character-dark.svg if the figure is
-  ever placed on a dark ground: drop the outline pass, and move the face
-  features onto the dark background token.
+  GitHub figure for the QR panel on /contact. Redrawn from i-foreground: same
+  dizzy spiral eyes, squiggle mouth and hunch over the laptop, but the laptop's
+  solid grey mass is now a light fill with dark linework.
 
-  Props are kept mostly light with small dark details on purpose. Large dark
-  masses turn the QR code's light modules dark, which is damage the occlusion
-  budget in src/lib/qr/render.ts cannot see or account for.
+  That conversion is the whole constraint. A large dark shape turns the QR
+  code's LIGHT modules dark, and src/lib/qr/render.ts cannot measure that kind
+  of damage — it only counts dark modules it removed. The original artwork
+  failed to decode for exactly this reason. Opaque LIGHT fills are safe: they
+  land on modules the coverage pass removes anyway.
+
+  Authored for the always-light panel, so there is no dark pair.
 -->
 <svg width="304" height="304" viewBox="0 0 304 304" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g transform="translate(0 -11) rotate(-4 152 163)">
+<g transform="rotate(-11 152 175)">
+  <!-- silhouette: stroked at double width, then repainted fill-only, so only
+       the outer contour survives and there is no head/shoulder seam -->
   <g stroke="var(--background-l3)" stroke-width="4">
-    <path d="M96 264L104 198C106 182 122 170 152 170C182 170 198 182 200 198L208 264Z" fill="var(--accent-l1)"/>
-    <circle cx="152" cy="116" r="54" fill="var(--accent-l0)"/>
+    <path d="M88 264L96 200C98 182 116 168 142 168C170 168 190 182 192 200L202 264Z" fill="var(--accent-l1)"/>
+    <circle cx="142" cy="118" r="50" fill="var(--accent-l0)"/>
   </g>
-  <path d="M96 264L104 198C106 182 122 170 152 170C182 170 198 182 200 198L208 264Z" fill="var(--accent-l1)"/>
-  <circle cx="152" cy="116" r="54" fill="var(--accent-l0)"/>
+  <path d="M88 264L96 200C98 182 116 168 142 168C170 168 190 182 192 200L202 264Z" fill="var(--accent-l1)"/>
+  <circle cx="142" cy="118" r="50" fill="var(--accent-l0)"/>
 
-  <!-- face -->
-  <circle cx="134" cy="110" r="3.9" fill="var(--foreground-l2)"/>
-  <circle cx="168" cy="106" r="3.9" fill="var(--foreground-l2)"/>
-  <path d="M145.5 124H158.5V130.5C158.5 135 155.6 138.5 152 138.5C148.4 138.5 145.5 135 145.5 130.5Z" stroke="var(--foreground-l2)" stroke-width="2" stroke-linejoin="round"/>
-
-  <!-- laptop: screen -->
-  <rect x="124" y="202" width="56" height="34" rx="3" fill="var(--background-l0)" stroke="var(--background-l6)" stroke-width="2"/>
-  <g stroke="var(--foreground-l2)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M137 212L143 219L137 226"/>
-    <path d="M148 226H160"/>
+  <!-- dizzy face: spiral eyes and a squiggle mouth -->
+  <g stroke="var(--foreground-l2)" stroke-width="2.4" stroke-linecap="round">
+    <path d="M136.5 112A9 9 0 0 1 119 112A7 7 0 0 1 133 112A5 5 0 0 1 123 112A3.5 3.5 0 0 1 129.5 112"/>
+    <path d="M167.5 105A9 9 0 0 1 150 105A7 7 0 0 1 164 105A5 5 0 0 1 154 105A3.5 3.5 0 0 1 160.5 105"/>
+    <path d="M124 136C128.5 130 133 139 137.5 133.5C142 128 146.5 137 151 131.5"/>
   </g>
-  <!-- laptop: keyboard deck -->
-  <path d="M120 238H184L190 249C190 250.7 188.7 252 187 252H117C115.3 252 114 250.7 114 249Z" fill="var(--background-l0)" stroke="var(--background-l6)" stroke-width="2"/>
+
+  <!-- laptop -->
+  <g transform="rotate(-14 168 220)" stroke="var(--foreground-l2)" stroke-linejoin="round">
+    <rect x="138" y="190" width="60" height="42" rx="4" fill="var(--background-l0)" stroke-width="2.5"/>
+    <circle cx="168" cy="211" r="6.5" stroke-width="2"/>
+    <path d="M132 234H204L211 247C211 248.7 209.7 250 208 250H126C124.3 250 123 248.7 123 247Z" fill="var(--background-l0)" stroke-width="2.5"/>
+  </g>
 </g>
 </svg>

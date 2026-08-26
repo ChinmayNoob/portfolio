@@ -1,32 +1,55 @@
 <!--
-  Authored for embedding in the always-light QR panel on /contact, so there is
-  no dark pair. Add one following linkedin-character-dark.svg if the figure is
-  ever placed on a dark ground: drop the outline pass, and move the face
-  features onto the dark background token.
+  X figure for the QR panel on /contact. Redrawn from k-foreground: same annoyed
+  brows, ring eye, anger marks, raised phone and pair of birds, but the phone's
+  solid grey mass is now a light fill with dark linework.
 
-  Props are kept mostly light with small dark details on purpose. Large dark
-  masses turn the QR code's light modules dark, which is damage the occlusion
-  budget in src/lib/qr/render.ts cannot see or account for.
+  That conversion is the whole constraint. A large dark shape turns the QR
+  code's LIGHT modules dark, and src/lib/qr/render.ts cannot measure that kind
+  of damage — it only counts dark modules it removed. The original artwork
+  failed to decode for exactly this reason. The birds stay solid dark because
+  they are tiny, on the scale of the eyes.
+
+  Authored for the always-light panel, so there is no dark pair.
 -->
 <svg width="304" height="304" viewBox="0 0 304 304" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g transform="translate(0 -11) rotate(-4 152 163)">
+<g transform="rotate(3 152 170)">
   <g stroke="var(--background-l3)" stroke-width="4">
-    <path d="M96 264L104 198C106 182 122 170 152 170C182 170 198 182 200 198L208 264Z" fill="var(--accent-l1)"/>
-    <circle cx="152" cy="116" r="54" fill="var(--accent-l0)"/>
+    <path d="M100 264L108 196C110 180 128 168 156 168C184 168 200 180 202 196L210 264Z" fill="var(--accent-l1)"/>
+    <circle cx="156" cy="112" r="54" fill="var(--accent-l0)"/>
   </g>
-  <path d="M96 264L104 198C106 182 122 170 152 170C182 170 198 182 200 198L208 264Z" fill="var(--accent-l1)"/>
-  <circle cx="152" cy="116" r="54" fill="var(--accent-l0)"/>
+  <path d="M100 264L108 196C110 180 128 168 156 168C184 168 200 180 202 196L210 264Z" fill="var(--accent-l1)"/>
+  <circle cx="156" cy="112" r="54" fill="var(--accent-l0)"/>
 
-  <!-- face -->
-  <circle cx="134" cy="110" r="3.9" fill="var(--foreground-l2)"/>
-  <circle cx="168" cy="106" r="3.9" fill="var(--foreground-l2)"/>
-  <path d="M145.5 124H158.5V130.5C158.5 135 155.6 138.5 152 138.5C148.4 138.5 145.5 135 145.5 130.5Z" stroke="var(--foreground-l2)" stroke-width="2" stroke-linejoin="round"/>
+  <!-- hairline, and the anger marks that sell the expression -->
+  <g stroke="var(--background-l6)" stroke-width="2.5" stroke-linecap="round">
+    <path d="M191 82C203 95 205 117 197 134"/>
+    <path d="M199 62C207 66 211 74 209 82"/>
+    <path d="M207 55C217 60 223 71 220 82"/>
+    <path d="M215 49C227 55 234 69 230 83"/>
+  </g>
 
-  <!-- speech bubble -->
-  <path d="M132 198H172C177.5 198 182 202.5 182 208V228C182 233.5 177.5 238 172 238H162L155 250L150 238H132C126.5 238 122 233.5 122 228V208C122 202.5 126.5 198 132 198Z" fill="var(--background-l0)" stroke="var(--background-l6)" stroke-width="2"/>
-  <g stroke="var(--foreground-l2)" stroke-width="4.5" stroke-linecap="round">
-    <path d="M142 209L163 228"/>
-    <path d="M163 209L142 228"/>
+  <!-- annoyed face: two hard brows around one wide ring eye -->
+  <g stroke="var(--foreground-l2)" stroke-linecap="round">
+    <path d="M130 98L146 107" stroke-width="4"/>
+    <path d="M182 98L166 107" stroke-width="4"/>
+    <circle cx="156" cy="118" r="5.5" stroke-width="2.5"/>
+  </g>
+
+  <!-- raised phone -->
+  <g transform="rotate(-20 110 190)" stroke="var(--foreground-l2)" stroke-linejoin="round">
+    <rect x="91" y="152" width="38" height="74" rx="8" fill="var(--background-l0)" stroke-width="2.5"/>
+    <rect x="96" y="158" width="17" height="17" rx="4.5" stroke-width="2"/>
+    <g fill="var(--foreground-l2)" stroke="none">
+      <circle cx="101.5" cy="163.5" r="2.1"/>
+      <circle cx="107.5" cy="163.5" r="2.1"/>
+      <circle cx="101.5" cy="169.5" r="2.1"/>
+    </g>
+  </g>
+
+  <!-- birds -->
+  <g fill="var(--foreground-l2)">
+    <path transform="translate(66 142) scale(1.3)" d="M0 0C2.5-4.5 6-5.5 9-3.5C7-1.5 6.5 1 6.5 3.5C4 1.5 2 0.8 0 0Z"/>
+    <path transform="translate(84 124) scale(1.05)" d="M0 0C2.5-4.5 6-5.5 9-3.5C7-1.5 6.5 1 6.5 3.5C4 1.5 2 0.8 0 0Z"/>
   </g>
 </g>
 </svg>

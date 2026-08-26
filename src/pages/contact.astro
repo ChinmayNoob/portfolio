@@ -25,6 +25,8 @@ const cards = await Promise.all(
       // build for want of artwork.
       art: art?.art ?? null,
       title: `QR code linking to ${art?.display ?? label}`,
+      // Namespaces this code's gradient ids; four codes share the page.
+      id: label,
     });
 
     // Proves the code decodes back to its own URL. A code that cannot be

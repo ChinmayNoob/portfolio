@@ -69,23 +69,3 @@ export function toMatrix(url: string): QrMatrix {
     isReserved: (x, y) => inBounds(x, y) && Boolean(reservedBit[y * size + x]),
   };
 }
-
-/**
- * Chebyshev distance to the nearest finder-pattern centre, which drives the
- * animation stagger. Using the nearest *finder* rather than the centre or a
- * corner is the whole point of the effect: the code grows outward from its
- * three structural anchors instead of fading in as an undifferentiated blob.
- */
-export function ringIndex(x: number, y: number, size: number): number {
-  const centres: readonly [number, number][] = [
-    [3, 3],
-    [size - 4, 3],
-    [3, size - 4],
-  ];
-  let best = Infinity;
-  for (const [cx, cy] of centres) {
-    const d = Math.max(Math.abs(x - cx), Math.abs(y - cy));
-    if (d < best) best = d;
-  }
-  return best;
-}

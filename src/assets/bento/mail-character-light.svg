@@ -1,29 +1,32 @@
 <!--
-  Authored for embedding in the always-light QR panel on /contact, so there is
-  no dark pair. Add one following linkedin-character-dark.svg if the figure is
-  ever placed on a dark ground: drop the outline pass, and move the face
-  features onto the dark background token.
+  Email figure for the QR panel on /contact: holding up an envelope.
 
-  Props are kept mostly light with small dark details on purpose. Large dark
-  masses turn the QR code's light modules dark, which is damage the occlusion
-  budget in src/lib/qr/render.ts cannot see or account for.
+  Carries a-foreground's original expression, the two dot eyes and small open
+  mouth. Given the smallest head and the widest lean of the four so it reads as
+  its own character rather than a recolour of the others.
+
+  Authored for the always-light panel, so there is no dark pair.
 -->
 <svg width="304" height="304" viewBox="0 0 304 304" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g transform="translate(0 -11) rotate(-4 152 163)">
+<g transform="rotate(-8 152 176)">
+  <!-- silhouette: stroked at double width, then repainted fill-only, so only
+       the outer contour survives and there is no head/shoulder seam -->
   <g stroke="var(--background-l3)" stroke-width="4">
-    <path d="M96 264L104 198C106 182 122 170 152 170C182 170 198 182 200 198L208 264Z" fill="var(--accent-l1)"/>
-    <circle cx="152" cy="116" r="54" fill="var(--accent-l0)"/>
+    <path d="M106 264L112 200C114 184 128 172 150 172C172 172 188 184 190 200L196 264Z" fill="var(--accent-l1)"/>
+    <circle cx="150" cy="120" r="46" fill="var(--accent-l0)"/>
   </g>
-  <path d="M96 264L104 198C106 182 122 170 152 170C182 170 198 182 200 198L208 264Z" fill="var(--accent-l1)"/>
-  <circle cx="152" cy="116" r="54" fill="var(--accent-l0)"/>
+  <path d="M106 264L112 200C114 184 128 172 150 172C172 172 188 184 190 200L196 264Z" fill="var(--accent-l1)"/>
+  <circle cx="150" cy="120" r="46" fill="var(--accent-l0)"/>
 
-  <!-- face -->
-  <circle cx="134" cy="110" r="3.9" fill="var(--foreground-l2)"/>
-  <circle cx="168" cy="106" r="3.9" fill="var(--foreground-l2)"/>
-  <path d="M145.5 124H158.5V130.5C158.5 135 155.6 138.5 152 138.5C148.4 138.5 145.5 135 145.5 130.5Z" stroke="var(--foreground-l2)" stroke-width="2" stroke-linejoin="round"/>
+  <!-- a-foreground's face: dot eyes and a small open mouth -->
+  <circle cx="137" cy="114" r="3.6" fill="var(--foreground-l2)"/>
+  <circle cx="163" cy="112" r="3.6" fill="var(--foreground-l2)"/>
+  <path d="M143.5 128H156.5V134.5C156.5 139 153.6 142.5 150 142.5C146.4 142.5 143.5 139 143.5 134.5Z" stroke="var(--foreground-l2)" stroke-width="2" stroke-linejoin="round"/>
 
-  <!-- envelope -->
-  <rect x="120" y="204" width="64" height="44" rx="4" fill="var(--background-l0)" stroke="var(--background-l6)" stroke-width="2"/>
-  <path d="M123 208L152 230L181 208" stroke="var(--foreground-l2)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- envelope, tilted against the body lean -->
+  <g transform="rotate(7 151 223)" stroke="var(--foreground-l2)" stroke-linejoin="round">
+    <rect x="118" y="200" width="66" height="46" rx="4" fill="var(--background-l0)" stroke-width="2.5"/>
+    <path d="M122 205L151 228L180 205" stroke-width="3" stroke-linecap="round"/>
+  </g>
 </g>
 </svg>
