@@ -1,0 +1,107 @@
+---
+import '~/styles/qr.css';
+
+import BaseLayout from '~/components/layout/base-layout.astro';
+import QrCard from '~/components/contact/qr-card.astro';
+import { cfg } from '~/cfg';
+import { CONTACT_ART } from '~/data/contact';
+import { renderQrSvg } from '~/lib/qr/render';
+import { assertScannable } from '~/lib/qr/verify';
+
+/**
+ * Encoding a code costs a rasterise pass per card, and the four payloads never
+ * change between deploys, so there is nothing to gain from doing it per
+ * request. The project default is output: 'server'.
+ */
+export const prerender = true;
+
+const cards = await Promise.all(
+  cfg.bio.links.map(async ({ label, url }) => {
+    const art = CONTACT_ART[label];
+
+    const { svg } = await renderQrSvg(url, {
+      // A link configured in site.config.ts with no matching figure still gets
+      // a card, just a plain code. Adding a fifth social must not break the
+      // build for want of artwork.
+      art: art?.art ?? null,
+      title: `QR code linking to ${art?.display ?? label}`,
+    });
+
+    // Proves the code decodes back to its own URL. A code that cannot be
+    // scanned fails the build rather than shipping quietly.
+    await assertScannable(svg, url, art?.display ?? label);
+
+    return {
+      href: url,
+      display: art?.display ?? label,
+      handle: art?.handle(url) ?? url,
+      svg,
+    };
+  }),
+);
+---
+
+<BaseLayout
+  seo={{
+    title: 'Contact',
+    description:
+      'Scan a code to reach me on any of my socials, or just click through.',
+  }}
+>
+  <script is:inline>
+    // Runs before first paint. Adding this class is the ONLY thing that opts a
+    // visitor into the hidden start state, so if the script never runs the
+    // codes render finished and scannable instead of invisible.
+    document.documentElement.classList.add('qr-anim');
+  </script>
+
+  <article class="prose-index contact-page">
+    <section class="flow mt-10" style="--flow-space: 1.75rem">
+      <div class="flow" style="--flow-space: 0.9rem">
+        <h1
+          class="font-editorial text-[clamp(2rem,5vw,3.1rem)] leading-[1.05] tracking-[-0.02em]"
+        >
+          Contact
+        </h1>
+        <p>Point a camera at one, or click it. Same destination either way.</p>
+      </div>
+
+      <div class="qr-grid not-prose">
+        {cards.map((card) => <QrCard {...card} />)}
+      </div>
+    </section>
+  </article>
+
+  <script>
+    // Plays each code's assemble-in once, when it first scrolls into view.
+    // Re-bound on astro:page-load because the layout mounts <ClientRouter />,
+    // so a client-side navigation replaces the DOM without a full reload.
+    function armQrCards() {
+      const cards = document.querySelectorAll<HTMLElement>('.qr-card');
+      if (!cards.length) return;
+
+      // Also set here, not just in the inline script: an inline script is not
+      // guaranteed to re-execute when ClientRouter swaps the document on a
+      // client-side navigation. Without this, arriving at /contact from
+      // another page would arm the observer against cards that were never put
+      // into their hidden start state, and nothing would animate.
+      document.documentElement.classList.add('qr-anim');
+
+      const observer = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            if (!entry.isIntersecting) continue;
+            entry.target.classList.add('is-settled');
+            observer.unobserve(entry.target);
+          }
+        },
+        { rootMargin: '0px 0px -10% 0px' },
+      );
+
+      for (const card of cards) observer.observe(card);
+    }
+
+    armQrCards();
+    document.addEventListener('astro:page-load', armQrCards);
+  </script>
+</BaseLayout>

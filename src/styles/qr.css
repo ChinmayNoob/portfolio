@@ -1,0 +1,157 @@
+/* ================================================== */
+/* contact QR cards                                    */
+/* ================================================== */
+/*
+ * The code panel is deliberately light in BOTH themes. Inverted codes (light
+ * modules on a dark ground) fail on a meaningful share of scanners, and a
+ * light panel is what QR codes are printed on everywhere for that reason. So
+ * the artwork embedded in the panel only ever needs its light values, which is
+ * why the tokens below are fixed rather than themed.
+ */
+
+.qr-card {
+  /* code */
+  --qr-paper: #faf4ed;
+  --qr-ink: #332b21;
+  --qr-tint: #6f6354;
+
+  /* the embedded figure, which is authored against the bento palette */
+  --accent-l0: #faf4ed;
+  --accent-l1: #ede7df;
+  --background-l0: #faf4ed;
+  --background-l3: #d4cdc5;
+  --background-l6: #aea79e;
+  --foreground-l2: #483f35;
+}
+
+.qr-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: 1.5rem;
+}
+
+.qr-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: 0.9rem;
+  padding: 0.9rem;
+  background: var(--muted);
+  text-decoration: none;
+  color: inherit;
+  transition:
+    border-color 200ms ease,
+    transform 200ms ease;
+}
+
+.qr-card:hover,
+.qr-card:focus-visible {
+  border-color: var(--ring);
+  transform: translateY(-2px);
+}
+
+.qr-card__code {
+  display: block;
+  border-radius: 0.55rem;
+  overflow: hidden;
+  background: var(--qr-paper);
+}
+
+.qr-card__code .qr {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.qr-card__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  padding: 0 0.15rem 0.15rem;
+}
+
+.qr-card__name {
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.qr-card__handle {
+  font-size: var(--fs--1, 0.85em);
+  color: var(--muted-foreground);
+  overflow-wrap: anywhere;
+}
+
+/* ================================================== */
+/* assemble-in animation                               */
+/* ================================================== */
+/*
+ * The finished, still code is the DEFAULT state, so no-JS renders a scannable
+ * card. An inline script adds .qr-anim to <html> before first paint, which is
+ * the only thing that opts a visitor into the hidden start state — meaning a
+ * failed or blocked script degrades to the static code rather than to nothing.
+ */
+
+.qr rect {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.qr-anim .qr-card:not(.is-settled) :is(.qr-ink, .qr-tint) rect {
+  opacity: 0;
+  transform: scale(0.2);
+}
+
+.qr-anim .qr-card:not(.is-settled) .qr-art {
+  opacity: 0;
+}
+
+.qr-anim .qr-card.is-settled :is(.qr-ink, .qr-tint) rect {
+  animation: qr-module-in 260ms cubic-bezier(0.2, 0.9, 0.25, 1) backwards;
+  /* --i is the module's Chebyshev distance from the nearest finder pattern, so
+   * the code grows out of its three structural anchors. */
+  animation-delay: calc(var(--i) * 15ms);
+}
+
+.qr-anim .qr-card.is-settled .qr-art {
+  animation: qr-art-in 420ms ease 260ms backwards;
+}
+
+@keyframes qr-module-in {
+  from {
+    opacity: 0;
+    transform: scale(0.2);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes qr-art-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/*
+ * Reduced motion gets the same finished code as no-JS: the start state is
+ * cancelled outright rather than merely shortened.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .qr-anim .qr-card:not(.is-settled) :is(.qr-ink, .qr-tint) rect,
+  .qr-anim .qr-card.is-settled :is(.qr-ink, .qr-tint) rect {
+    opacity: 1;
+    transform: none;
+    animation: none;
+  }
+
+  .qr-anim .qr-card:not(.is-settled) .qr-art,
+  .qr-anim .qr-card.is-settled .qr-art {
+    opacity: 1;
+    animation: none;
+  }
+}

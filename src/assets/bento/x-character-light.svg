@@ -1,0 +1,32 @@
+<!--
+  Authored for embedding in the always-light QR panel on /contact, so there is
+  no dark pair. Add one following linkedin-character-dark.svg if the figure is
+  ever placed on a dark ground: drop the outline pass, and move the face
+  features onto the dark background token.
+
+  Props are kept mostly light with small dark details on purpose. Large dark
+  masses turn the QR code's light modules dark, which is damage the occlusion
+  budget in src/lib/qr/render.ts cannot see or account for.
+-->
+<svg width="304" height="304" viewBox="0 0 304 304" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g transform="translate(0 -11) rotate(-4 152 163)">
+  <g stroke="var(--background-l3)" stroke-width="4">
+    <path d="M96 264L104 198C106 182 122 170 152 170C182 170 198 182 200 198L208 264Z" fill="var(--accent-l1)"/>
+    <circle cx="152" cy="116" r="54" fill="var(--accent-l0)"/>
+  </g>
+  <path d="M96 264L104 198C106 182 122 170 152 170C182 170 198 182 200 198L208 264Z" fill="var(--accent-l1)"/>
+  <circle cx="152" cy="116" r="54" fill="var(--accent-l0)"/>
+
+  <!-- face -->
+  <circle cx="134" cy="110" r="3.9" fill="var(--foreground-l2)"/>
+  <circle cx="168" cy="106" r="3.9" fill="var(--foreground-l2)"/>
+  <path d="M145.5 124H158.5V130.5C158.5 135 155.6 138.5 152 138.5C148.4 138.5 145.5 135 145.5 130.5Z" stroke="var(--foreground-l2)" stroke-width="2" stroke-linejoin="round"/>
+
+  <!-- speech bubble -->
+  <path d="M132 198H172C177.5 198 182 202.5 182 208V228C182 233.5 177.5 238 172 238H162L155 250L150 238H132C126.5 238 122 233.5 122 228V208C122 202.5 126.5 198 132 198Z" fill="var(--background-l0)" stroke="var(--background-l6)" stroke-width="2"/>
+  <g stroke="var(--foreground-l2)" stroke-width="4.5" stroke-linecap="round">
+    <path d="M142 209L163 228"/>
+    <path d="M163 209L142 228"/>
+  </g>
+</g>
+</svg>

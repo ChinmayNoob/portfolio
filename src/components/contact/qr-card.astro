@@ -1,0 +1,27 @@
+---
+type Props = {
+  href: string;
+  display: string;
+  handle: string;
+  /** Pre-rendered, build-time verified QR markup. */
+  svg: string;
+};
+
+const { href, display, handle, svg } = Astro.props;
+
+// mailto: has no cross-origin target to open.
+const external = !href.startsWith('mailto:');
+---
+
+<a
+  class="qr-card"
+  {href}
+  target={external ? '_blank' : undefined}
+  rel={external ? 'noopener noreferrer' : undefined}
+>
+  <span class="qr-card__code" set:html={svg} />
+  <span class="qr-card__meta">
+    <span class="qr-card__name">{display}</span>
+    <span class="qr-card__handle">{handle}</span>
+  </span>
+</a>
