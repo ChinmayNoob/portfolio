@@ -11,7 +11,9 @@ import { assertScannable } from '~/lib/qr/verify';
 /**
  * Encoding a code costs a rasterise pass per card, and the four payloads never
  * change between deploys, so there is nothing to gain from doing it per
- * request. The project default is output: 'server'.
+ * request. Redundant now that the project is output: 'static', but kept
+ * explicit: it is the guarantee that sharp, qrcode and jsqr stay at build time
+ * and never reach the Cloudflare Worker, where sharp cannot run at all.
  */
 export const prerender = true;
 

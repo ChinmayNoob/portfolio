@@ -21,9 +21,12 @@ animated by default, still for `prefers-reduced-motion` and for no-JS.
 
 ## Data
 
-`src/pages/contact.astro` sets `export const prerender = true`. The project
-default is `output: 'server'` with the Vercel adapter, so without this the page
-would be server-rendered on every request for no benefit.
+`src/pages/contact.astro` sets `export const prerender = true`. This was
+necessary when the project was `output: 'server'`, and is redundant now that it
+is `output: 'static'` on Cloudflare Workers — but it is kept explicit, because it
+is the guarantee that `sharp`, `qrcode` and `jsqr` run only at build time.
+`sharp` is a native binary and cannot execute on Workers at all, so an SSR
+version of these pages would not merely be slower, it would not run.
 
 URLs come from `cfg.bio.links` in `site.config.ts`. There is no second copy of
 them.
@@ -402,8 +405,7 @@ so `art.ts` now checks for it and raises a message naming the real cause.
 - `site.config.ts` now points at `https://chinmay.fyi/`, which changes canonical
   URLs, the sitemap, RSS and OG for the WHOLE site, not just these pages. That
   is correct only once the domain is live.
-- `pnpm build` fails at the very end in `@astrojs/vercel`'s `astro:build:done`
-  hook with `EPERM ... symlink`, because Windows blocks symlink creation without
-  elevation. Reproduced with these changes stashed, so it is pre-existing and
-  unrelated. `astro check` passes with 0 errors across 132 files, and `/contact`
-  prerenders successfully before it. Moot once the Cloudflare migration lands.
+- The `EPERM ... symlink` build failure noted during development came from the
+  Vercel adapter and is gone: the branch is now rebased onto the Cloudflare
+  Workers migration, where `pnpm build` completes cleanly with 0 errors and both
+  pages prerender.
